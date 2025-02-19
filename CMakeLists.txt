@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(Coursach)
+project(BlockRace)
 
 # Используем C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -14,7 +14,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SFML)
 
 # Добавляем исполняемый файл
-add_executable(MySFMLProject src/main.cpp)
+add_executable(BlockRace src/main.cpp)
 
 # Подключаем SFML к проекту
-target_link_libraries(MySFMLProject PRIVATE sfml-graphics sfml-window sfml-system)
+target_link_libraries(BlockRace PRIVATE sfml-graphics sfml-window sfml-system)
