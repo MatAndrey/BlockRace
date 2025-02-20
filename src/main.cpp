@@ -1,10 +1,14 @@
 #include <SFML/Graphics.hpp>
+#include "Blocks/StartBlock.hpp"
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({ 200, 200 }), "SFML works!");
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+    sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "SFML works!");
+
+
+    Car car;
+    StartBlock start({ 10, 10 }, &car, &window);
+
 
     while (window.isOpen())
     {
@@ -12,10 +16,21 @@ int main()
         {
             if (event->is<sf::Event::Closed>())
                 window.close();
+            if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+                window.setSize(resized->size);
+            }
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (keyPressed->scancode == sf::Keyboard::Scan::Escape)
+                {
+                    window.close();
+                }
+            }
         }
 
-        window.clear();
-        window.draw(shape);
+
+        window.clear(sf::Color(100, 100, 100));
+        start.draw();
         window.display();
     }
 }

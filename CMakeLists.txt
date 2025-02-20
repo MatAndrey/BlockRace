@@ -14,7 +14,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SFML)
 
 # Добавляем исполняемый файл
-add_executable(BlockRace src/main.cpp)
+add_executable(BlockRace src/main.cpp "src/Blocks/Block.cpp" "src/Blocks/StartBlock.cpp" "src/Car.cpp")
+
+# Добавление assets в билд
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
 
 # Подключаем SFML к проекту
 target_link_libraries(BlockRace PRIVATE sfml-graphics sfml-window sfml-system)
