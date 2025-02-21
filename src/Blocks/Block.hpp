@@ -9,9 +9,10 @@ protected:
 	sf::RenderWindow* window;
 
 public:
-	Block(sf::Vector2f _pos, sf::Vector2f _size, sf::RenderWindow* _window);
-
+	Block(sf::Vector2f _pos, sf::Vector2f _size, sf::RenderWindow* window);
 	virtual ~Block();
 
-	virtual void draw() = 0;
+	virtual void render() = 0;
+	bool isInBoundingBox(sf::Vector2f point);
+	void move(sf::Vector2f delta);
 };

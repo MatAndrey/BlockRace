@@ -1,12 +1,10 @@
 #include "StartBlock.hpp"
-#include <SFML/Graphics.hpp>
-#include <vector>
 
-void StartBlock::draw() { 
+void StartBlock::render() { 
     sf::RectangleShape shape1({ 150, 30 });
     shape1.setFillColor(sf::Color(44, 122, 65));
     shape1.setPosition(pos);
-    window->draw(shape1);
+	window->draw(shape1);
 
     sf::RectangleShape shape2({ 25, 5 });
     shape2.setFillColor(sf::Color(44, 122, 65));
@@ -22,6 +20,6 @@ void StartBlock::draw() {
     window->draw(text);
 }
 
-StartBlock::StartBlock(sf::Vector2f _pos, Car* _car, sf::RenderWindow* _window): Block(_pos, {150, 30}, _window), car(_car) {}
+StartBlock::StartBlock(sf::Vector2f _pos, Car* _car, sf::RenderWindow* window): Block(_pos, {150, 30}, window), car(_car) {}
 
 StartBlock::~StartBlock() {}
