@@ -1,23 +1,27 @@
 #include "Game.hpp"
-#include "Blocks/StartBlock.hpp"
 #include <iostream>
 
 Game::Game() :
 	initHeight(1080),
-	initWidth(1920)
+	initWidth(1920),
+	car({ 10, 10 }, & window)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 
 	appView.setViewport(sf::FloatRect({ 0, 0 }, { 1, 1 }));
+
 	raceView.setViewport(sf::FloatRect({ 0.25f, 0.05f }, { 0.75f, 0.9f }));
+	raceView.setSize({ 0.75f * window.getSize().x, 0.9f * window.getSize().y });
+	raceView.setCenter({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 
 	blocksView.setViewport(sf::FloatRect({ 0, 0.05f }, { 0.25f, 0.9f }));
-	blocksView.setSize({0.25f * window.getSize().x, 0.9f * window.getSize().y});
-	blocksView.setCenter({0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2});
+	blocksView.setSize({0.25f * window.getSize().x, 0.9f * window.getSize().y });
+	blocksView.setCenter({0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 	
-	Car car;
 	startBlock = new StartBlock(sf::Vector2f(10, 10), &car, &window);
 	blocks.push_back(startBlock);
+
+	car.moveTo({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 }
 
 Game::~Game()
@@ -32,6 +36,7 @@ void Game::loop()
    while (window.isOpen())  
    {  
        handleEvents();
+	   update();
        render();        
    }  
 }
@@ -51,6 +56,9 @@ void Game::handleEvents() {
 		if (event->is<sf::Event::Resized>()) {
 			blocksView.setSize({ 0.25f * window.getSize().x, 0.9f * window.getSize().y });
 			blocksView.setCenter({ 0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
+
+			raceView.setSize({ 0.75f * window.getSize().x, 0.9f * window.getSize().y });
+			raceView.setCenter({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 		}
 		
 		if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
@@ -85,8 +93,7 @@ void Game::handleEvents() {
 
 				sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved->position, blocksView);
 				if (viewBounds.contains(worldPos)) {
-					std::cout << worldPos.x << " " << worldPos.y << std::endl;
-					activeBlock->move(worldPos - startPos);
+					activeBlock->moveBy(worldPos - startPos);
 					startPos = worldPos;
 				}
 			}
@@ -103,16 +110,17 @@ void Game::render()
 	raceBackground.setFillColor(sf::Color::White);
 	raceBackground.setSize({ 1920, 1080 });
 	window.draw(raceBackground);
+	car.render();
 	
 	window.setView(blocksView);
 	sf::RectangleShape blocksBackground;
 	blocksBackground.setFillColor(sf::Color(200, 200, 200));
 	blocksBackground.setSize({ 1920, 1080 });
 	window.draw(blocksBackground);
-
 	for (const auto& block : blocks) {
 		block->render();
 	}
+
 	window.setView(appView);
 
     window.display();
@@ -121,5 +129,6 @@ void Game::render()
 
 void Game::update()
 {
-	// TODO
+	sf::Time elapsed = clock.restart();
+	car.update(elapsed);
 }
