@@ -1,10 +1,10 @@
 #include "Game.hpp"
-#include "Blocks/StartBlock.hpp"
 #include <iostream>
 
 Game::Game() :
 	initHeight(1080),
-	initWidth(1920)
+	initWidth(1920),
+	car(&window)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 
@@ -15,7 +15,7 @@ Game::Game() :
 	blocksView.setSize({0.25f * window.getSize().x, 0.9f * window.getSize().y});
 	blocksView.setCenter({0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2});
 	
-	Car car;
+	
 	startBlock = new StartBlock(sf::Vector2f(10, 10), &car, &window);
 	blocks.push_back(startBlock);
 }
@@ -85,7 +85,6 @@ void Game::handleEvents() {
 
 				sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved->position, blocksView);
 				if (viewBounds.contains(worldPos)) {
-					std::cout << worldPos.x << " " << worldPos.y << std::endl;
 					activeBlock->move(worldPos - startPos);
 					startPos = worldPos;
 				}
@@ -103,6 +102,7 @@ void Game::render()
 	raceBackground.setFillColor(sf::Color::White);
 	raceBackground.setSize({ 1920, 1080 });
 	window.draw(raceBackground);
+	car.render();
 	
 	window.setView(blocksView);
 	sf::RectangleShape blocksBackground;
@@ -116,7 +116,6 @@ void Game::render()
 	window.setView(appView);
 
     window.display();
-    
 }
 
 void Game::update()

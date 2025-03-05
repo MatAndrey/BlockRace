@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include "Blocks/StartBlock.hpp"
 
 class Block;
 class StartBlock;
@@ -15,6 +16,8 @@ class Game {
 	bool leftHold = false;
 	sf::Vector2f startPos = { 0, 0 };
 	Block* activeBlock = nullptr;
+
+	Car car;
 
 public:
 	unsigned initWidth;
