@@ -6,11 +6,6 @@ Entity::~Entity()
 {
 }
 
-bool Entity::isInBoundingBox(sf::Vector2f point) {
-    sf::FloatRect rect(pos, size);
-    return rect.contains(point);
-}
-
 void Entity::moveBy(sf::Vector2f delta)
 {
     pos += delta;

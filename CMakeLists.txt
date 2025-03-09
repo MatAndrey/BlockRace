@@ -14,7 +14,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SFML)
 
 # Добавляем исполняемый файл
-add_executable(BlockRace src/main.cpp "src/Blocks/Block.cpp" "src/Blocks/StartBlock.cpp" "src/Car.cpp" "src/Game.cpp" "src/Entity.cpp")
+add_executable(BlockRace src/main.cpp "src/Blocks/Block.cpp" "src/Blocks/StartBlock.cpp" "src/Car.cpp" "src/Game.cpp" "src/Entity.cpp" "src/Blocks/TimerBlock.cpp" "src/Blocks/AccelerationBlock.cpp")
 
 # Добавление assets в билд
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})

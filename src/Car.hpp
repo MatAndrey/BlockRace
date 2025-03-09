@@ -9,6 +9,7 @@ class Car : public Entity
 public:
 	virtual void render();
 	void update(sf::Time elapsed);
+	void accelerate(float acceleration);
 	Car(sf::Vector2f _pos, sf::RenderWindow* window);
 	~Car();
 };

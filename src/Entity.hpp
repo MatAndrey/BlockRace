@@ -3,12 +3,10 @@
 
 class Entity {
 protected:
-	sf::Vector2f pos;
-	sf::Vector2f size;
 	sf::RenderWindow* window;
 public:
+	sf::Vector2f pos;
 	virtual void render() = 0;
-	bool isInBoundingBox(sf::Vector2f point);
 	void moveBy(sf::Vector2f delta);
 	void moveTo(sf::Vector2f newPos);
 

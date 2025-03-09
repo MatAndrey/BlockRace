@@ -1,5 +1,4 @@
 #include "Game.hpp"
-#include <iostream>
 
 Game::Game() :
 	initHeight(1080),
@@ -18,8 +17,11 @@ Game::Game() :
 	blocksView.setSize({0.25f * window.getSize().x, 0.9f * window.getSize().y });
 	blocksView.setCenter({0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 	
-	startBlock = new StartBlock(sf::Vector2f(10, 10), &car, &window);
+	startBlock = new StartBlock(sf::Vector2f(10, 10), &window);
 	blocks.push_back(startBlock);
+
+	blocks.push_back(new TimerBlock(sf::Vector2f(10, 50), &window));
+	blocks.push_back(new AccelerationBlock(sf::Vector2f(10, 100), &window));
 
 	car.moveTo({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 }
@@ -79,8 +81,15 @@ void Game::handleEvents() {
 		{
 			if (mouseButtonReleased->button == sf::Mouse::Button::Left)
 			{
+				for (Block* block : blocks) {
+					if (block->blockInteract(activeBlock)) {
+						break;
+					}
+				}
+
 				leftHold = false;
 				activeBlock = nullptr;
+
 			}
 		}
 		if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())

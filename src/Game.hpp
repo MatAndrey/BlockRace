@@ -2,6 +2,8 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include "Blocks/StartBlock.hpp"
+#include "Blocks/TimerBlock.hpp"
+#include "Blocks/AccelerationBlock.hpp"
 
 class Block;
 class StartBlock;
