@@ -21,7 +21,8 @@ Game::Game() :
 	blocks.push_back(startBlock);
 
 	blocks.push_back(new TimerBlock(sf::Vector2f(10, 50), &window));
-	blocks.push_back(new AccelerationBlock(sf::Vector2f(10, 100), &window));
+	blocks.push_back(new AccelerationBlock(sf::Vector2f(10, 150), &window));
+	blocks.push_back(new AccelerationBlock(sf::Vector2f(10, 190), &window));
 
 	car.moveTo({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 }

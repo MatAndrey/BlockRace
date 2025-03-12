@@ -15,6 +15,9 @@ protected:
 	sf::RectangleShape shape6;
 	sf::RectangleShape shape7;
 	sf::RectangleShape shape8;
+
+	void resize();
+	float getInnerHeight();
 public:
 	TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window);
 	~TimerBlock();

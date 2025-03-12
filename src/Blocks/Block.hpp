@@ -11,6 +11,7 @@ protected:
 public:
 	sf::Vector2f size;
 	Block* nextBlock;
+	bool canBeChild;
 
 	Block(sf::Vector2f _pos, sf::Vector2f _size, sf::RenderWindow* window);
 	virtual ~Block();

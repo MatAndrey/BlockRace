@@ -1,14 +1,14 @@
 #include "AccelerationBlock.hpp"
 
 AccelerationBlock::AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window):
-	Block(_pos, {150, 30}, window), acceleration(1), shape1({20, 30}), shape2({25, 30}), shape3({105, 30})
+	Block(_pos, {120, 30}, window), acceleration(1), shape1({20, 30}), shape2({25, 30}), shape3({75, 30})
 {
-    shape1.setFillColor(sf::Color(44, 122, 65));
+    shape1.setFillColor(sf::Color(44, 71, 122));
 
-    shape2.setFillColor(sf::Color(44, 122, 65));
+    shape2.setFillColor(sf::Color(44, 71, 122));
     shape2.setPosition(sf::Vector2f(20, 5));
 
-    shape3.setFillColor(sf::Color(44, 122, 65));
+    shape3.setFillColor(sf::Color(44, 71, 122));
     shape3.setPosition(sf::Vector2f(45, 0));
 
     text.setString(L"Ускорение");
@@ -16,7 +16,7 @@ AccelerationBlock::AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window
     text.setPosition(sf::Vector2f{ 5, 8 });
 
     std::vector<sf::Vector2f> vertexes{
-        {0, 0}, {20, 0}, {20, 5}, {45, 5}, {45, 0}, {150, 0}, {150, 30},
+        {0, 0}, {20, 0}, {20, 5}, {45, 5}, {45, 0}, {120, 0}, {120, 30},
         {45, 30}, {45, 35}, {20, 35}, {20, 30}, {0, 30}, {0, 0}
     };
     outline.resize(vertexes.size());

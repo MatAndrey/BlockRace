@@ -5,6 +5,10 @@ void TimerBlock::render()
     sf::Transform transform;
     transform.translate(pos);
 
+    if (getInnerHeight() + 90 != size.y ) {
+        resize();
+    }
+
     window->draw(shape1, transform);
     window->draw(shape2, transform);
     window->draw(shape3, transform);
@@ -18,12 +22,41 @@ void TimerBlock::render()
     window->draw(text, transform);
 }
 
-TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window) :
-    Block(_pos, { 150, 30 }, window), innerNextBlock(nullptr), timerDuration(sf::seconds(1)),
-    shape1({ 20, 100 }), shape2({ 25, 25 }), shape3({ 105, 30 }), shape4({ 25, 5 }), shape5({20, 30}),
-    shape6({ 25, 25 }), shape7({ 85, 30 }), shape8({ 25, 5 })
+void TimerBlock::resize()
 {
-    float offset = getChainHeight() + 30;
+    float offset = getInnerHeight() + 60;
+    size.y = offset + 30;
+    shape1.setSize({ 20, size.y });
+    shape5.setPosition({ 20, offset });
+    shape6.setPosition({ 40, offset + 5 });
+    shape7.setPosition({ 65, offset });
+    shape8.setPosition({ 20, offset + 30 });
+
+    std::vector<sf::Vector2f> vertexes{
+        {0, 0}, {20, 0}, {20, 5}, {45, 5}, {45, 0}, {120, 0}, {120, 30}, {65, 30}, {65, 35},
+        {40, 35}, {40, 30}, {20, 30}, {20, offset}, {40, offset}, {40, offset + 5,},
+        {65, offset + 5}, {65, offset}, {120, offset}, {120, offset + 30}, {45, offset + 30},
+        {45, offset + 35}, {20, offset + 35}, {20, offset + 30}, {0, offset + 30}, {0, 0}
+    };
+    for (int i = 0; i < vertexes.size(); i++) {
+        outline[i].position = vertexes[i];
+    }
+}
+
+float TimerBlock::getInnerHeight()
+{
+    if (innerNextBlock) {
+        return innerNextBlock->getChainHeight();
+    }
+    return 0.0;
+}
+
+TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window) :
+    Block(_pos, { 120, 30 }, window), innerNextBlock(nullptr), timerDuration(sf::seconds(1)),
+    shape1({ 20, 100 }), shape2({ 25, 25 }), shape3({ 75, 30 }), shape4({ 25, 5 }), shape5({20, 30}),
+    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 })
+{
+    float offset = getInnerHeight() + 60;
     size.y = offset + 30;
 
     shape1.setFillColor(sf::Color(44, 122, 65));
@@ -50,14 +83,14 @@ TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window) :
     shape8.setFillColor(sf::Color(44, 122, 65));
     shape8.setPosition({ 20, offset + 30 });
 
-    text.setString(L"Продолжать 1 секунду");
+    text.setString(L"1 секунду");
     text.setCharacterSize(14);
     text.setPosition(sf::Vector2f{ 5, 8 });
 
     std::vector<sf::Vector2f> vertexes{ 
-        {0, 0}, {20, 0}, {20, 5}, {45, 5}, {45, 0}, {150, 0}, {150, 30}, {65, 30}, {65, 35},
+        {0, 0}, {20, 0}, {20, 5}, {45, 5}, {45, 0}, {120, 0}, {120, 30}, {65, 30}, {65, 35},
         {40, 35}, {40, 30}, {20, 30}, {20, offset}, {40, offset}, {40, offset + 5,},
-        {65, offset + 5}, {65, offset}, {150, offset}, {150, offset + 30}, {45, offset + 30},
+        {65, offset + 5}, {65, offset}, {120, offset}, {120, offset + 30}, {45, offset + 30},
         {45, offset + 35}, {20, offset + 35}, {20, offset + 30}, {0, offset + 30}, {0, 0}
     };
     outline.resize(vertexes.size());
@@ -85,7 +118,7 @@ bool TimerBlock::blockInteract(Block* other)
         innerNextBlock = nullptr;
     }
 
-    if (nextBlock != other) {
+    if (nextBlock != other && other->canBeChild) {
         if ((sf::Vector2f(pos.x + 20 - other->pos.x, pos.y + 30 - other->pos.y)).length() < 5) {
             innerNextBlock = other;
             other->moveBy(sf::Vector2f(pos.x + 20, pos.y + 30) - other->pos);
