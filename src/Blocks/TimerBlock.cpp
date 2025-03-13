@@ -129,6 +129,11 @@ bool TimerBlock::blockInteract(Block* other)
     return false;
 }
 
+TimerBlock* TimerBlock::clone()
+{
+    return new TimerBlock(pos, window);
+}
+
 void TimerBlock::update(Car& car)
 {
     sf::Clock clock;

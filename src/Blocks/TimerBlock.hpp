@@ -23,6 +23,7 @@ public:
 	~TimerBlock();
 	virtual void moveBy(sf::Vector2f);
 	virtual bool blockInteract(Block*);
+	virtual TimerBlock* clone();
 	virtual void render();
 	virtual void update(Car& car);
 	virtual bool isInBoundingBox(sf::Vector2f point);

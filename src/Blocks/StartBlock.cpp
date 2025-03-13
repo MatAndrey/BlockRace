@@ -37,6 +37,11 @@ StartBlock::~StartBlock() {
 
 }
 
+StartBlock* StartBlock::clone()
+{
+    return new StartBlock(pos, window);
+}
+
 void StartBlock::update(Car& car) {
     if (nextBlock != nullptr) {
         nextBlock->update(car);

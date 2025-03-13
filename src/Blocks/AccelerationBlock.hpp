@@ -11,7 +11,7 @@ class AccelerationBlock : public Block {
 public:
 	AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window);
 	~AccelerationBlock();
-
+	virtual AccelerationBlock* clone();
 	virtual void render();
 	virtual void update(Car& car);
 };

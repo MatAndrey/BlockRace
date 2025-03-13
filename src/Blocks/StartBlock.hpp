@@ -9,7 +9,7 @@ class StartBlock : public Block {
 public:
 	StartBlock(sf::Vector2f _pos, sf::RenderWindow* window);
 	virtual ~StartBlock();
-
+	virtual StartBlock* clone();
 	virtual void render();
 	virtual void update(Car& car);
 };

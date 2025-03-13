@@ -1,8 +1,10 @@
 #include "Game.hpp"
+#include <iostream>
 
 Game::Game() :
 	initHeight(1080),
 	initWidth(1920),
+	blockStoreWidth(150),
 	car({ 10, 10 }, & window)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
@@ -17,12 +19,11 @@ Game::Game() :
 	blocksView.setSize({0.25f * window.getSize().x, 0.9f * window.getSize().y });
 	blocksView.setCenter({0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 	
-	startBlock = new StartBlock(sf::Vector2f(10, 10), &window);
+	startBlock = new StartBlock(sf::Vector2f(160, 10), &window);
 	blocks.push_back(startBlock);
 
-	blocks.push_back(new TimerBlock(sf::Vector2f(10, 50), &window));
-	blocks.push_back(new AccelerationBlock(sf::Vector2f(10, 150), &window));
-	blocks.push_back(new AccelerationBlock(sf::Vector2f(10, 190), &window));
+	blockStore.push_back(new TimerBlock(sf::Vector2f(10, 10), &window));
+	blockStore.push_back(new AccelerationBlock(sf::Vector2f(10, 110), &window));
 
 	car.moveTo({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 }
@@ -30,6 +31,9 @@ Game::Game() :
 Game::~Game()
 {
 	for (const auto& block : blocks) {
+		delete block;
+	}
+	for (const auto& block : blockStore) {
 		delete block;
 	}
 }
@@ -76,13 +80,36 @@ void Game::handleEvents() {
 						activeBlock = block;
 					}
 				}
+				for (auto block : blockStore) {
+					if (block->isInBoundingBox(worldPos)) {
+						startPos = worldPos;
+						activeBlock = block->clone();
+						blocks.push_back(activeBlock);
+					}
+				}
 			}
 		}
 		if (const auto* mouseButtonReleased = event->getIf<sf::Event::MouseButtonReleased>())
 		{
 			if (mouseButtonReleased->button == sf::Mouse::Button::Left)
 			{
-				for (Block* block : blocks) {
+
+				for (auto iter = blocks.begin(); iter != blocks.end();) {
+					Block* block = *iter;
+					if (block->pos.x + block->size.x < blockStoreWidth) {
+						if (block != startBlock) {
+							iter = blocks.erase(iter);
+							delete block;
+							continue;
+						}
+						else {
+							startBlock->nextBlock = nullptr;
+							iter++;
+						}						
+					}
+					else {
+						iter++;
+					}
 					if (block->blockInteract(activeBlock)) {
 						break;
 					}
@@ -123,11 +150,20 @@ void Game::render()
 	car.render();
 	
 	window.setView(blocksView);
+
 	sf::RectangleShape blocksBackground;
 	blocksBackground.setFillColor(sf::Color(200, 200, 200));
 	blocksBackground.setSize({ 1920, 1080 });
 	window.draw(blocksBackground);
+	sf::RectangleShape storeBackground;
+	storeBackground.setFillColor(sf::Color(150, 150, 150));
+	storeBackground.setSize({ (float)blockStoreWidth, 1080 });
+	window.draw(storeBackground);
+
 	for (const auto& block : blocks) {
+		block->render();
+	}
+	for (const auto& block : blockStore) {
 		block->render();
 	}
 

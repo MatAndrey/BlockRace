@@ -1,15 +1,13 @@
 #pragma once
-#include <vector>
+#include <list>
 #include <SFML/Graphics.hpp>
 #include "Blocks/StartBlock.hpp"
 #include "Blocks/TimerBlock.hpp"
 #include "Blocks/AccelerationBlock.hpp"
 
-class Block;
-class StartBlock;
-
 class Game {
-	std::vector<Block*> blocks;
+	std::list<Block*> blocks;
+	std::list<Block*> blockStore;
 	StartBlock* startBlock;
 
 	Car car;
@@ -25,6 +23,7 @@ class Game {
 
 	unsigned initWidth;
 	unsigned initHeight;
+	unsigned blockStoreWidth;
 	sf::Clock clock;
 
 	void handleEvents();

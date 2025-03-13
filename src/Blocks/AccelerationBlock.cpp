@@ -30,6 +30,11 @@ AccelerationBlock::~AccelerationBlock()
 {
 }
 
+AccelerationBlock* AccelerationBlock::clone()
+{
+    return new AccelerationBlock(pos, window);
+}
+
 void AccelerationBlock::render()
 {
     sf::Transform transform;

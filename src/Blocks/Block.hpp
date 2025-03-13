@@ -20,6 +20,7 @@ public:
 	float getChainHeight();
 	virtual bool isInBoundingBox(sf::Vector2f point);
 	virtual bool blockInteract(Block*);
+	virtual Block* clone() = 0;
 	virtual void render() = 0;
 	virtual void update(Car& car) = 0;
 };
