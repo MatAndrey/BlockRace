@@ -12,4 +12,5 @@ public:
 	virtual StartBlock* clone();
 	virtual void render();
 	virtual void update(Car& car);
+	virtual std::string name();
 };

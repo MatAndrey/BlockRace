@@ -47,3 +47,8 @@ void StartBlock::update(Car& car) {
         nextBlock->update(car);
     }
 }
+
+std::string StartBlock::name()
+{
+    return "StartBlock";
+}

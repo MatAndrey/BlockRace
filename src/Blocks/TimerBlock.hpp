@@ -27,5 +27,6 @@ public:
 	virtual void render();
 	virtual void update(Car& car);
 	virtual bool isInBoundingBox(sf::Vector2f point);
+	virtual std::string name();
 };
 

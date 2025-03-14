@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <string>
 #include "../Entity.hpp"
 #include "../Car.hpp"
 
@@ -8,6 +9,7 @@ protected:
 	sf::VertexArray outline;
 	sf::Font font;
 	sf::Text text;
+	static const short interactionRadius = 10;
 public:
 	sf::Vector2f size;
 	Block* nextBlock;
@@ -23,4 +25,5 @@ public:
 	virtual Block* clone() = 0;
 	virtual void render() = 0;
 	virtual void update(Car& car) = 0;
+	virtual std::string name() = 0;
 };

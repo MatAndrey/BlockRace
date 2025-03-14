@@ -18,24 +18,32 @@ Game::Game() :
 	blocksView.setViewport(sf::FloatRect({ 0, 0.05f }, { 0.25f, 0.9f }));
 	blocksView.setSize({0.25f * window.getSize().x, 0.9f * window.getSize().y });
 	blocksView.setCenter({0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
-	
-	startBlock = new StartBlock(sf::Vector2f(160, 10), &window);
-	blocks.push_back(startBlock);
 
-	blockStore.push_back(new TimerBlock(sf::Vector2f(10, 10), &window));
-	blockStore.push_back(new AccelerationBlock(sf::Vector2f(10, 110), &window));
+	blockStore.push_back(new StartBlock(sf::Vector2f(0, 0), &window));
+	blockStore.push_back(new TimerBlock(sf::Vector2f(0, 0), &window));
+	blockStore.push_back(new AccelerationBlock(sf::Vector2f(0, 0), &window));
+	blockStore.push_back(new DecelerationBlock(sf::Vector2f(0, 0), &window));
+
+	float y = 10;
+	for (auto block : blockStore) {
+		block->moveTo({ 10, y });
+		y += block->size.y + 10;
+	}
 
 	car.moveTo({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
+	loadFromFile();
 }
 
 Game::~Game()
 {
-	for (const auto& block : blocks) {
+	saveToFile();
+	for (auto& block : blocks) {
 		delete block;
 	}
-	for (const auto& block : blockStore) {
+	for (auto& block : blockStore) {
 		delete block;
 	}
+	std::cout << 123 << std::endl;
 }
 
 void Game::loop()  
@@ -171,6 +179,40 @@ void Game::render()
 
     window.display();
     
+}
+
+void Game::saveToFile()
+{
+	std::ofstream file("save.dat");
+	for (const auto& block : blocks) {
+		file << block->name() << "\t" << block->pos.x << "\t" << block->pos.y << "\n";
+	}
+	file.close();
+}
+
+void Game::loadFromFile()
+{
+	std::ifstream file("save.dat");
+	while(!file.eof()) {
+		std::string type;
+		sf::Vector2f pos;
+		file >> type >> pos.x >> pos.y;
+		Block* block;
+		if (type == "StartBlock") {
+			block = new StartBlock(pos, &window);
+		}
+		else if (type == "AccelerationBlock") {
+			block = new AccelerationBlock(pos, &window);
+		}
+		else if (type == "DecelerationBlock") {
+			block = new DecelerationBlock(pos, &window);
+		}
+		else if (type == "TimerBlock") {
+			block = new TimerBlock(pos, &window);
+		}
+		blocks.push_back(block);
+	}
+	file.close();
 }
 
 void Game::update()

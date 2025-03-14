@@ -119,7 +119,7 @@ bool TimerBlock::blockInteract(Block* other)
     }
 
     if (nextBlock != other && other->canBeChild) {
-        if ((sf::Vector2f(pos.x + 20 - other->pos.x, pos.y + 30 - other->pos.y)).length() < 5) {
+        if ((sf::Vector2f(pos.x + 20 - other->pos.x, pos.y + 30 - other->pos.y)).length() < interactionRadius) {
             innerNextBlock = other;
             other->moveBy(sf::Vector2f(pos.x + 20, pos.y + 30) - other->pos);
             return true;
@@ -155,4 +155,9 @@ bool TimerBlock::isInBoundingBox(sf::Vector2f point) {
     sf::FloatRect rect6(shape7.getPosition() + pos, shape7.getSize());
     return rect1.contains(point) || rect2.contains(point) || rect3.contains(point)
         || rect4.contains(point) || rect5.contains(point) || rect6.contains(point);
+}
+
+std::string TimerBlock::name()
+{
+    return "TimerBlock";
 }

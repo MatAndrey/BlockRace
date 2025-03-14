@@ -1,9 +1,11 @@
 #pragma once
 #include <list>
+#include <fstream>
 #include <SFML/Graphics.hpp>
 #include "Blocks/StartBlock.hpp"
 #include "Blocks/TimerBlock.hpp"
 #include "Blocks/AccelerationBlock.hpp"
+#include "Blocks/DecelerationBlock.hpp"
 
 class Game {
 	std::list<Block*> blocks;
@@ -29,6 +31,9 @@ class Game {
 	void handleEvents();
 	void update();
 	void render();
+
+	void saveToFile();
+	void loadFromFile();
 public:
 	Game();
 	~Game();
