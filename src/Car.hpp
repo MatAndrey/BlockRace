@@ -1,13 +1,15 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include "Entity.hpp"
 
-class Car
+class Car : public Entity
 {
+	float acceleration;
+	float speed;
+	sf::Angle direction;
 public:
-	Car(sf::RenderWindow* _window);
+	virtual void render();
+	void update(sf::Time elapsed);
+	void accelerate(float acceleration);
+	Car(sf::Vector2f _pos, sf::RenderWindow* window);
 	~Car();
-	void render();
-
-protected:
-	sf::RenderWindow* window;
 };

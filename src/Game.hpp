@@ -1,33 +1,36 @@
 #pragma once
-#include <vector>
+#include <list>
 #include <SFML/Graphics.hpp>
 #include "Blocks/StartBlock.hpp"
-
-class Block;
-class StartBlock;
+#include "Blocks/TimerBlock.hpp"
+#include "Blocks/AccelerationBlock.hpp"
 
 class Game {
-	std::vector<Block*> blocks;
+	std::list<Block*> blocks;
+	std::list<Block*> blockStore;
 	StartBlock* startBlock;
+
+	Car car;
+
 	sf::View appView;
 	sf::View blocksView;
 	sf::View raceView;
+	sf::RenderWindow window;
 
 	bool leftHold = false;
 	sf::Vector2f startPos = { 0, 0 };
 	Block* activeBlock = nullptr;
 
-	Car car;
-
-public:
 	unsigned initWidth;
 	unsigned initHeight;
-	sf::RenderWindow window;
+	unsigned blockStoreWidth;
+	sf::Clock clock;
 
-	Game();
-	~Game();
-	void loop();
 	void handleEvents();
 	void update();
 	void render();
+public:
+	Game();
+	~Game();
+	void loop();
 };

@@ -1,14 +1,15 @@
 #pragma once
-
 #include <SFML/Graphics.hpp>
 #include "Block.hpp"
-#include "../Car.hpp"
+#include <vector>
 
 class StartBlock : public Block {
-protected:
-	Car* car;
+	sf::RectangleShape shape1;
+	sf::RectangleShape shape2;
 public:
-	StartBlock(sf::Vector2f _pos, Car* car, sf::RenderWindow* window);
+	StartBlock(sf::Vector2f _pos, sf::RenderWindow* window);
 	virtual ~StartBlock();
+	virtual StartBlock* clone();
 	virtual void render();
+	virtual void update(Car& car);
 };
