@@ -10,7 +10,6 @@
 class Game {
 	std::list<Block*> blocks;
 	std::list<Block*> blockStore;
-	StartBlock* startBlock;
 
 	Car car;
 
@@ -22,6 +21,7 @@ class Game {
 	bool leftHold = false;
 	sf::Vector2f startPos = { 0, 0 };
 	Block* activeBlock = nullptr;
+	Block* nextBlockToUpdate;
 
 	unsigned initWidth;
 	unsigned initHeight;
@@ -31,6 +31,7 @@ class Game {
 	void handleEvents();
 	void update();
 	void render();
+	void reset();
 
 	void saveToFile();
 	void loadFromFile();

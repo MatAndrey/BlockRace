@@ -5,7 +5,10 @@ class TimerBlock : public Block
 {
 protected:
 	Block* innerNextBlock;
+	sf::Clock clock;
 	sf::Time timerDuration;
+	sf::Time elapsedTime;
+	bool isWorking;
 
 	sf::RectangleShape shape1;
 	sf::RectangleShape shape2;
@@ -25,7 +28,7 @@ public:
 	virtual bool blockInteract(Block*);
 	virtual TimerBlock* clone();
 	virtual void render();
-	virtual void update(Car& car);
+	virtual Block* update(Car& car);
 	virtual bool isInBoundingBox(sf::Vector2f point);
 	virtual std::string name();
 };

@@ -48,11 +48,14 @@ void DecelerationBlock::render()
     window->draw(text, transform);
 }
 
-void DecelerationBlock::update(Car& car)
+Block* DecelerationBlock::update(Car& car)
 {
-    car.accelerate(-deceleration);
+    car.decelerate(deceleration);
     if (nextBlock) {
-        nextBlock->update(car);
+        return nextBlock;
+    }
+    else {
+        return nullptr;
     }
 }
 

@@ -13,6 +13,7 @@ protected:
 public:
 	sf::Vector2f size;
 	Block* nextBlock;
+	Block* prevBlock;
 	bool canBeChild;
 
 	Block(sf::Vector2f _pos, sf::Vector2f _size, sf::RenderWindow* window);
@@ -24,6 +25,6 @@ public:
 	virtual bool blockInteract(Block*);
 	virtual Block* clone() = 0;
 	virtual void render() = 0;
-	virtual void update(Car& car) = 0;
+	virtual Block* update(Car& car) = 0;
 	virtual std::string name() = 0;
 };

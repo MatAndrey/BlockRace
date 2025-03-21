@@ -5,7 +5,8 @@ Game::Game() :
 	initHeight(1080),
 	initWidth(1920),
 	blockStoreWidth(150),
-	car({ 10, 10 }, & window)
+	car({ 10, 10 }, & window),
+	nextBlockToUpdate(nullptr)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 
@@ -30,7 +31,7 @@ Game::Game() :
 		y += block->size.y + 10;
 	}
 
-	car.moveTo({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
+	reset();
 	loadFromFile();
 }
 
@@ -43,7 +44,6 @@ Game::~Game()
 	for (auto& block : blockStore) {
 		delete block;
 	}
-	std::cout << 123 << std::endl;
 }
 
 void Game::loop()  
@@ -83,35 +83,50 @@ void Game::handleEvents() {
 				leftHold = true;
 				sf::Vector2f worldPos = window.mapPixelToCoords(mouseButtonPressed->position, blocksView);
 				for (auto block : blocks) {
-					if (block->isInBoundingBox(worldPos)) {					
+					if (block->name() == "StartBlock") {
+						StartBlock* sb = dynamic_cast<StartBlock*> (block);
+						if (sb->isMouseOver(worldPos)) {
+							bool chainState = sb->click(worldPos);
+							if (chainState) {
+								nextBlockToUpdate = sb;
+							}
+							else {
+								reset();
+							}
+							break;
+						}
+					}
+					if (block->isInBoundingBox(worldPos) && !nextBlockToUpdate) {
 						startPos = worldPos;
 						activeBlock = block;
 					}
 				}
-				for (auto block : blockStore) {
-					if (block->isInBoundingBox(worldPos)) {
-						startPos = worldPos;
-						activeBlock = block->clone();
-						blocks.push_back(activeBlock);
+				if (!nextBlockToUpdate) {
+					for (auto block : blockStore) {
+						if (block->isInBoundingBox(worldPos)) {
+							startPos = worldPos;
+							activeBlock = block->clone();
+							blocks.push_back(activeBlock);
+						}
 					}
-				}
+				}				
 			}
 		}
 		if (const auto* mouseButtonReleased = event->getIf<sf::Event::MouseButtonReleased>())
 		{
-			if (mouseButtonReleased->button == sf::Mouse::Button::Left)
+			if (mouseButtonReleased->button == sf::Mouse::Button::Left && !nextBlockToUpdate)
 			{
-
 				for (auto iter = blocks.begin(); iter != blocks.end();) {
 					Block* block = *iter;
+
 					if (block->pos.x + block->size.x < blockStoreWidth) {
-						if (block != startBlock) {
+						if (block->name() != "StartBlock") {
 							iter = blocks.erase(iter);
 							delete block;
 							continue;
 						}
 						else {
-							startBlock->nextBlock = nullptr;
+							block->nextBlock = nullptr;
 							iter++;
 						}						
 					}
@@ -130,16 +145,32 @@ void Game::handleEvents() {
 		}
 		if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())
 		{
-			if (leftHold && activeBlock != nullptr) {
-				sf::FloatRect viewBounds({
-					blocksView.getCenter().x - blocksView.getSize().x / 2,
-					blocksView.getCenter().y - blocksView.getSize().y / 2 },
-					{blocksView.getSize().x, blocksView.getSize().y});
+			if (!nextBlockToUpdate) {
+				for (Block* block : blocks) {
+					if (block->name() == "StartBlock") {
+						StartBlock* sb = dynamic_cast<StartBlock*> (block);
+						if (sb->isMouseOver(window.mapPixelToCoords(mouseMoved->position, blocksView))) {
+							const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Hand).value();
+							window.setMouseCursor(cursor);
+						}
+						else {
+							const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Arrow).value();
+							window.setMouseCursor(cursor);
+						}
+						break;
+					}
+				}
+				if (leftHold && activeBlock != nullptr) {
+					sf::FloatRect viewBounds({
+						blocksView.getCenter().x - blocksView.getSize().x / 2,
+						blocksView.getCenter().y - blocksView.getSize().y / 2 },
+						{ blocksView.getSize().x, blocksView.getSize().y });
 
-				sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved->position, blocksView);
-				if (viewBounds.contains(worldPos)) {
-					activeBlock->moveBy(worldPos - startPos);
-					startPos = worldPos;
+					sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved->position, blocksView);
+					if (viewBounds.contains(worldPos)) {
+						activeBlock->moveBy(worldPos - startPos);
+						startPos = worldPos;
+					}
 				}
 			}
 		}
@@ -181,6 +212,13 @@ void Game::render()
     
 }
 
+void Game::reset()
+{
+	car.reset();
+	car.moveTo({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
+	nextBlockToUpdate = nullptr;
+}
+
 void Game::saveToFile()
 {
 	std::ofstream file("save.dat");
@@ -193,11 +231,14 @@ void Game::saveToFile()
 void Game::loadFromFile()
 {
 	std::ifstream file("save.dat");
+	if (!file) {
+		return;
+	}
 	while(!file.eof()) {
 		std::string type;
 		sf::Vector2f pos;
 		file >> type >> pos.x >> pos.y;
-		Block* block;
+		Block* block = nullptr;
 		if (type == "StartBlock") {
 			block = new StartBlock(pos, &window);
 		}
@@ -210,13 +251,24 @@ void Game::loadFromFile()
 		else if (type == "TimerBlock") {
 			block = new TimerBlock(pos, &window);
 		}
-		blocks.push_back(block);
+		if (block) {
+			for (auto b : blocks) {
+				b->blockInteract(block);
+			}
+			blocks.push_back(block);
+		}
+		
 	}
 	file.close();
+
 }
 
 void Game::update()
 {
 	sf::Time elapsed = clock.restart();
+	if (nextBlockToUpdate) {
+		nextBlockToUpdate = nextBlockToUpdate->update(car);
+	}
+
 	car.update(elapsed);
 }

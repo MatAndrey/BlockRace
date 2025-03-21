@@ -13,6 +13,6 @@ public:
 	~AccelerationBlock();
 	virtual AccelerationBlock* clone();
 	virtual void render();
-	virtual void update(Car& car);
+	virtual Block* update(Car& car);
 	virtual std::string name();
 };

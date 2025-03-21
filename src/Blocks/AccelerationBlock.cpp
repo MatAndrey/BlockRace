@@ -1,4 +1,5 @@
 #include "AccelerationBlock.hpp"
+#include <iostream>
 
 AccelerationBlock::AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window):
 	Block(_pos, {120, 30}, window), acceleration(1), shape1({20, 30}), shape2({25, 30}), shape3({75, 30})
@@ -48,12 +49,15 @@ void AccelerationBlock::render()
     window->draw(text, transform);
 }
 
-void AccelerationBlock::update(Car& car)
+Block* AccelerationBlock::update(Car& car)
 {
     car.accelerate(acceleration);
 	if (nextBlock) {
-		nextBlock->update(car);
-	}
+        return nextBlock;
+    }
+    else {
+        return nullptr;
+    }
 }
 
 std::string AccelerationBlock::name()

@@ -1,4 +1,5 @@
 #include "TimerBlock.hpp"
+#include <iostream>
 
 void TimerBlock::render()
 {
@@ -52,9 +53,9 @@ float TimerBlock::getInnerHeight()
 }
 
 TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window) :
-    Block(_pos, { 120, 30 }, window), innerNextBlock(nullptr), timerDuration(sf::seconds(1)),
+    Block(_pos, { 120, 30 }, window), innerNextBlock(nullptr), timerDuration(sf::seconds(1)), elapsedTime(sf::seconds(0)),
     shape1({ 20, 100 }), shape2({ 25, 25 }), shape3({ 75, 30 }), shape4({ 25, 5 }), shape5({20, 30}),
-    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 })
+    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), isWorking(false)
 {
     float offset = getInnerHeight() + 60;
     size.y = offset + 30;
@@ -118,9 +119,13 @@ bool TimerBlock::blockInteract(Block* other)
         innerNextBlock = nullptr;
     }
 
-    if (nextBlock != other && other->canBeChild) {
+    if (other != nullptr && nextBlock != other && other->canBeChild) {
         if ((sf::Vector2f(pos.x + 20 - other->pos.x, pos.y + 30 - other->pos.y)).length() < interactionRadius) {
+            if (other->prevBlock) {
+                other->prevBlock->nextBlock = nullptr;
+            }
             innerNextBlock = other;
+            other->prevBlock = this;
             other->moveBy(sf::Vector2f(pos.x + 20, pos.y + 30) - other->pos);
             return true;
         }
@@ -134,16 +139,28 @@ TimerBlock* TimerBlock::clone()
     return new TimerBlock(pos, window);
 }
 
-void TimerBlock::update(Car& car)
+Block* TimerBlock::update(Car& car)
 {
-    sf::Clock clock;
-    sf::Time timeRest = timerDuration;
-    while ((timeRest + clock.reset()) > sf::microseconds(1)) {
-        innerNextBlock->update(car);
+    if (isWorking) {
+        elapsedTime += clock.restart();
+        if (elapsedTime < timerDuration) {
+            Block* blockToUpdate = innerNextBlock;
+            while (blockToUpdate) {
+                blockToUpdate = blockToUpdate->update(car);
+            }
+            return this;
+        }
+        else {
+            isWorking = false;
+            return nextBlock;
+        }
     }
-	if (nextBlock) {
-		nextBlock->update(car);
-	}
+    else {
+        clock.restart();
+        elapsedTime = sf::seconds(0);
+        isWorking = true;
+        return this;
+    }
 }
 
 bool TimerBlock::isInBoundingBox(sf::Vector2f point) {
