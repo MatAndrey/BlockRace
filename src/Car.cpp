@@ -34,6 +34,9 @@ void Car::update(sf::Time elapsed) {
     else {
         acceleration += dt;
     }
+
+    direction += directionDelta;
+
     pos += speed * dt * sf::Vector2f{cos(direction.asRadians()), sin(direction.asRadians())};
 }
 
@@ -42,9 +45,14 @@ void Car::accelerate(float _acceleration)
     acceleration = _acceleration;
 }
 
+void Car::setDirection(sf::Angle _dir)
+{
+    directionDelta = _dir;
+}
+
 Car::Car(sf::Vector2f _pos, sf::RenderWindow* window) : 
     Entity(_pos, window),
-    speed(0), acceleration(0), direction(sf::degrees(-90))
+    speed(0), acceleration(0), direction(sf::degrees(-90)), directionDelta(sf::degrees(0))
 {}
 
 Car::~Car()
