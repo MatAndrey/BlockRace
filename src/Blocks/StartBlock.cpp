@@ -4,15 +4,20 @@ void StartBlock::render() {
     sf::Transform transform;
     transform.translate(pos);
 
+    button.pos = pos + sf::Vector2f{ 5, 5 };
+    
 	window->draw(shape1, transform);
     window->draw(shape2, transform);
     window->draw(outline, transform);
     window->draw(text, transform);
+
+    button.render();
 }
 
 StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window):
     Block(_pos, {120, 30}, window),
-    shape1(size), shape2({ 25, 5 })
+    shape1(size), shape2({ 25, 5 }),
+    button(_pos, window)
 {
     canBeChild = false;
     shape1.setFillColor(sf::Color(44, 122, 65));
@@ -22,7 +27,7 @@ StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window):
 
     text.setString(L"Начало");
     text.setCharacterSize(14);
-    text.setPosition({ 5, 5 });
+    text.setPosition({ 30, 5 });
 
 
     std::vector<sf::Vector2f> vertexes{ {0, 0}, {120, 0}, {120, 30}, {45, 30}, {45, 35}, {20, 35}, {20, 30}, {0, 30}, {0, 0} };
@@ -31,6 +36,11 @@ StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window):
         outline[i].position = vertexes[i];
         outline[i].color = sf::Color::White;
     }
+}
+
+bool StartBlock::isMouseOver(sf::Vector2f pos)
+{
+    return button.isMouseOver(pos);
 }
 
 StartBlock::~StartBlock() {
@@ -42,8 +52,21 @@ StartBlock* StartBlock::clone()
     return new StartBlock(pos, window);
 }
 
-void StartBlock::update(Car& car) {
+Block* StartBlock::update(Car& car) {
     if (nextBlock != nullptr) {
-        nextBlock->update(car);
+        return nextBlock;
     }
+    else {
+        return nullptr;
+    }
+}
+
+std::string StartBlock::name()
+{
+    return "StartBlock";
+}
+
+bool StartBlock::click(sf::Vector2f mousePos)
+{
+    return button.click(mousePos);
 }

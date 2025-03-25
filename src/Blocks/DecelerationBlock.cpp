@@ -1,8 +1,7 @@
-#include "AccelerationBlock.hpp"
-#include <iostream>
+#include "DecelerationBlock.hpp"
 
-AccelerationBlock::AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window):
-	Block(_pos, {120, 30}, window), acceleration(1), shape1({20, 30}), shape2({25, 30}), shape3({75, 30})
+DecelerationBlock::DecelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window) :
+    Block(_pos, { 120, 30 }, window), deceleration(1), shape1({ 20, 30 }), shape2({ 25, 30 }), shape3({ 75, 30 })
 {
     shape1.setFillColor(sf::Color(44, 71, 122));
 
@@ -12,7 +11,7 @@ AccelerationBlock::AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window
     shape3.setFillColor(sf::Color(44, 71, 122));
     shape3.setPosition(sf::Vector2f(45, 0));
 
-    text.setString(L"Ускорение");
+    text.setString(L"Торможение");
     text.setCharacterSize(14);
     text.setPosition(sf::Vector2f{ 5, 8 });
 
@@ -27,16 +26,16 @@ AccelerationBlock::AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window
     }
 }
 
-AccelerationBlock::~AccelerationBlock()
+DecelerationBlock::~DecelerationBlock()
 {
 }
 
-AccelerationBlock* AccelerationBlock::clone()
+DecelerationBlock* DecelerationBlock::clone()
 {
-    return new AccelerationBlock(pos, window);
+    return new DecelerationBlock(pos, window);
 }
 
-void AccelerationBlock::render()
+void DecelerationBlock::render()
 {
     sf::Transform transform;
     transform.translate(pos);
@@ -49,10 +48,10 @@ void AccelerationBlock::render()
     window->draw(text, transform);
 }
 
-Block* AccelerationBlock::update(Car& car)
+Block* DecelerationBlock::update(Car& car)
 {
-    car.accelerate(acceleration);
-	if (nextBlock) {
+    car.decelerate(deceleration);
+    if (nextBlock) {
         return nextBlock;
     }
     else {
@@ -60,7 +59,7 @@ Block* AccelerationBlock::update(Car& car)
     }
 }
 
-std::string AccelerationBlock::name()
+std::string DecelerationBlock::name()
 {
-    return "AccelerationBlock";
+    return "DecelerationBlock";
 }
