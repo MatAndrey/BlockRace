@@ -15,4 +15,5 @@ public:
 	virtual void render();
 	virtual Block* update(Car& car);
 	virtual std::string name();
+	virtual bool handleEvent(sf::Event& event, sf::Vector2f mousePos);
 };

@@ -11,7 +11,9 @@ class RotationBlock : public Block {
 public:
 	RotationBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::Angle _dir);
 	~RotationBlock();
+	float getAngle();
 	virtual RotationBlock* clone();
 	virtual void render();
-	virtual void update(Car& car);
+	virtual Block* update(Car& car);
+	virtual std::string name();
 };

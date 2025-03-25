@@ -1,6 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "Entity.hpp"
+#include "../Entity.hpp"
 
 class StartButton : public Entity {
 	bool state;

@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include "Block.hpp"
 #include <vector>
-#include "../StartButton.hpp"
+#include "../UI/StartButton.hpp"
 
 class StartBlock : public Block {
 	sf::RectangleShape shape1;

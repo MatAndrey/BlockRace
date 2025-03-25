@@ -1,5 +1,6 @@
 #pragma once
 #include "Block.hpp"
+#include "../UI/TextField.hpp"
 
 class TimerBlock : public Block
 {
@@ -18,11 +19,12 @@ protected:
 	sf::RectangleShape shape6;
 	sf::RectangleShape shape7;
 	sf::RectangleShape shape8;
+	TextField field;
 
 	void resize();
 	float getInnerHeight();
 public:
-	TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window);
+	TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, float height = 90, int durationMs = 1000);
 	~TimerBlock();
 	virtual void moveBy(sf::Vector2f);
 	virtual bool blockInteract(Block*);
@@ -31,5 +33,7 @@ public:
 	virtual Block* update(Car& car);
 	virtual bool isInBoundingBox(sf::Vector2f point);
 	virtual std::string name();
+	int getDuration();
+	void reset();
 };
 

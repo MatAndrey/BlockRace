@@ -6,6 +6,7 @@
 #include "Blocks/TimerBlock.hpp"
 #include "Blocks/AccelerationBlock.hpp"
 #include "Blocks/DecelerationBlock.hpp"
+#include "Blocks/RotationBlock.hpp"
 
 class Game {
 	std::list<Block*> blocks;
@@ -18,10 +19,11 @@ class Game {
 	sf::View raceView;
 	sf::RenderWindow window;
 
-	bool leftHold = false;
 	sf::Vector2f startPos = { 0, 0 };
-	Block* activeBlock = nullptr;
-	Block* nextBlockToUpdate;
+	Block* movingBlock = nullptr;
+	Block* nextBlockToUpdate = nullptr;
+	StartBlock* activeStartBlock = nullptr;
+	bool isRunning = false;
 
 	unsigned initWidth;
 	unsigned initHeight;

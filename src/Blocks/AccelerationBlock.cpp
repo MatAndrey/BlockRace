@@ -64,3 +64,8 @@ std::string AccelerationBlock::name()
 {
     return "AccelerationBlock";
 }
+
+bool AccelerationBlock::handleEvent(sf::Event& event, sf::Vector2f mousePos)
+{
+    return false;
+}

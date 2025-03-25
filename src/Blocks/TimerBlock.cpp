@@ -21,6 +21,9 @@ void TimerBlock::render()
     window->draw(outline, transform);
 
     window->draw(text, transform);
+
+    field.pos = pos + sf::Vector2f{ 5, 5 };
+    field.render();
 }
 
 void TimerBlock::resize()
@@ -42,6 +45,10 @@ void TimerBlock::resize()
     for (int i = 0; i < vertexes.size(); i++) {
         outline[i].position = vertexes[i];
     }
+
+    if (nextBlock) {
+        nextBlock->moveBy(pos + sf::Vector2f{ 0, offset + 30 } - nextBlock->pos);
+    }
 }
 
 float TimerBlock::getInnerHeight()
@@ -52,13 +59,12 @@ float TimerBlock::getInnerHeight()
     return 0.0;
 }
 
-TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window) :
-    Block(_pos, { 120, 30 }, window), innerNextBlock(nullptr), timerDuration(sf::seconds(1)), elapsedTime(sf::seconds(0)),
+TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, float height, int durationMs) :
+    Block(_pos, { 120, height }, window), innerNextBlock(nullptr), timerDuration(sf::milliseconds(durationMs)), elapsedTime(sf::seconds(0)),
     shape1({ 20, 100 }), shape2({ 25, 25 }), shape3({ 75, 30 }), shape4({ 25, 5 }), shape5({20, 30}),
-    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), isWorking(false)
+    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), isWorking(false), field(pos + sf::Vector2f{5, 5}, window, {40, 20})
 {
-    float offset = getInnerHeight() + 60;
-    size.y = offset + 30;
+    float offset = size.y - 30;
 
     shape1.setFillColor(sf::Color(44, 122, 65));
     shape1.setSize({ 20, size.y });
@@ -115,19 +121,19 @@ void TimerBlock::moveBy(sf::Vector2f delta)
 
 bool TimerBlock::blockInteract(Block* other)
 {
-    if (innerNextBlock == other) {
+    if (innerNextBlock == other && innerNextBlock != nullptr) {
+        innerNextBlock->prevBlock = nullptr;
         innerNextBlock = nullptr;
     }
 
     if (other != nullptr && nextBlock != other && other->canBeChild) {
         if ((sf::Vector2f(pos.x + 20 - other->pos.x, pos.y + 30 - other->pos.y)).length() < interactionRadius) {
-            if (other->prevBlock) {
-                other->prevBlock->nextBlock = nullptr;
-            }
-            innerNextBlock = other;
-            other->prevBlock = this;
-            other->moveBy(sf::Vector2f(pos.x + 20, pos.y + 30) - other->pos);
-            return true;
+            if (!other->prevBlock) {
+                innerNextBlock = other;
+                other->prevBlock = this;
+                other->moveBy(sf::Vector2f(pos.x + 20, pos.y + 30) - other->pos);
+                return true;
+            }            
         }
     }
     if (Block::blockInteract(other)) return true;
@@ -136,7 +142,7 @@ bool TimerBlock::blockInteract(Block* other)
 
 TimerBlock* TimerBlock::clone()
 {
-    return new TimerBlock(pos, window);
+    return new TimerBlock(pos, window, size.y, getDuration());
 }
 
 Block* TimerBlock::update(Car& car)
@@ -146,7 +152,13 @@ Block* TimerBlock::update(Car& car)
         if (elapsedTime < timerDuration) {
             Block* blockToUpdate = innerNextBlock;
             while (blockToUpdate) {
-                blockToUpdate = blockToUpdate->update(car);
+                Block* newBlockToUpdate = blockToUpdate->update(car);
+                if (newBlockToUpdate == blockToUpdate) {
+                    break;
+                }
+                else {
+                    blockToUpdate = newBlockToUpdate;
+                }
             }
             return this;
         }
@@ -177,4 +189,14 @@ bool TimerBlock::isInBoundingBox(sf::Vector2f point) {
 std::string TimerBlock::name()
 {
     return "TimerBlock";
+}
+
+int TimerBlock::getDuration()
+{
+    return timerDuration.asMilliseconds();
+}
+
+void TimerBlock::reset()
+{
+    isWorking = false;
 }

@@ -5,8 +5,7 @@ Game::Game() :
 	initHeight(1080),
 	initWidth(1920),
 	blockStoreWidth(150),
-	car({ 10, 10 }, & window),
-	nextBlockToUpdate(nullptr)
+	car({ 10, 10 }, & window)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 
@@ -24,6 +23,9 @@ Game::Game() :
 	blockStore.push_back(new TimerBlock(sf::Vector2f(0, 0), &window));
 	blockStore.push_back(new AccelerationBlock(sf::Vector2f(0, 0), &window));
 	blockStore.push_back(new DecelerationBlock(sf::Vector2f(0, 0), &window));
+	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), &window, sf::degrees(1.5)));
+	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), &window, sf::degrees(-1.5)));
+	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), &window, sf::degrees(0)));
 
 	float y = 10;
 	for (auto block : blockStore) {
@@ -80,15 +82,16 @@ void Game::handleEvents() {
 		{
 			if (mouseButtonPressed->button == sf::Mouse::Button::Left)
 			{
-				leftHold = true;
 				sf::Vector2f worldPos = window.mapPixelToCoords(mouseButtonPressed->position, blocksView);
-				for (auto block : blocks) {
+				for (auto &block : blocks) {
 					if (block->name() == "StartBlock") {
 						StartBlock* sb = dynamic_cast<StartBlock*> (block);
-						if (sb->isMouseOver(worldPos)) {
+						if (sb->isMouseOver(worldPos) && (sb == activeStartBlock || !isRunning)) {
 							bool chainState = sb->click(worldPos);
 							if (chainState) {
 								nextBlockToUpdate = sb;
+								activeStartBlock = sb;
+								isRunning = true;
 							}
 							else {
 								reset();
@@ -96,17 +99,17 @@ void Game::handleEvents() {
 							break;
 						}
 					}
-					if (block->isInBoundingBox(worldPos) && !nextBlockToUpdate) {
+					if (block->isInBoundingBox(worldPos) && !isRunning) {
 						startPos = worldPos;
-						activeBlock = block;
+						movingBlock = block;
 					}
 				}
-				if (!nextBlockToUpdate) {
+				if (!isRunning) {
 					for (auto block : blockStore) {
 						if (block->isInBoundingBox(worldPos)) {
 							startPos = worldPos;
-							activeBlock = block->clone();
-							blocks.push_back(activeBlock);
+							movingBlock = block->clone();
+							blocks.push_back(movingBlock);
 						}
 					}
 				}				
@@ -114,32 +117,25 @@ void Game::handleEvents() {
 		}
 		if (const auto* mouseButtonReleased = event->getIf<sf::Event::MouseButtonReleased>())
 		{
-			if (mouseButtonReleased->button == sf::Mouse::Button::Left && !nextBlockToUpdate)
+			if (mouseButtonReleased->button == sf::Mouse::Button::Left && !isRunning)
 			{
 				for (auto iter = blocks.begin(); iter != blocks.end();) {
 					Block* block = *iter;
 
 					if (block->pos.x + block->size.x < blockStoreWidth) {
-						if (block->name() != "StartBlock") {
-							iter = blocks.erase(iter);
-							delete block;
-							continue;
-						}
-						else {
-							block->nextBlock = nullptr;
-							iter++;
-						}						
+						iter = blocks.erase(iter);
+						delete block;
+						continue;						
 					}
 					else {
 						iter++;
 					}
-					if (block->blockInteract(activeBlock)) {
+					if (block->blockInteract(movingBlock)) {
 						break;
 					}
 				}
 
-				leftHold = false;
-				activeBlock = nullptr;
+				movingBlock = nullptr;
 
 			}
 		}
@@ -160,7 +156,7 @@ void Game::handleEvents() {
 						break;
 					}
 				}
-				if (leftHold && activeBlock != nullptr) {
+				if (movingBlock != nullptr) {
 					sf::FloatRect viewBounds({
 						blocksView.getCenter().x - blocksView.getSize().x / 2,
 						blocksView.getCenter().y - blocksView.getSize().y / 2 },
@@ -168,7 +164,7 @@ void Game::handleEvents() {
 
 					sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved->position, blocksView);
 					if (viewBounds.contains(worldPos)) {
-						activeBlock->moveBy(worldPos - startPos);
+						movingBlock->moveBy(worldPos - startPos);
 						startPos = worldPos;
 					}
 				}
@@ -217,13 +213,30 @@ void Game::reset()
 	car.reset();
 	car.moveTo({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 	nextBlockToUpdate = nullptr;
+	activeStartBlock = nullptr;
+	isRunning = false;
+	for (const auto& block : blocks) {
+		if (block->name() == "TimerBlock") {
+			TimerBlock* tb = dynamic_cast<TimerBlock*>(block);
+			tb->reset();
+		}
+	}
 }
 
 void Game::saveToFile()
 {
 	std::ofstream file("save.dat");
 	for (const auto& block : blocks) {
-		file << block->name() << "\t" << block->pos.x << "\t" << block->pos.y << "\n";
+		if (block->name() == "RotationBlock") {
+			RotationBlock* rb = dynamic_cast<RotationBlock*>(block);
+			file << rb->name() << "\t" << rb->pos.x << "\t" << rb->pos.y << "\t" << rb->getAngle() << "\n";
+		} else if (block->name() == "TimerBlock") {
+			TimerBlock* tb = dynamic_cast<TimerBlock*>(block);
+			file << tb->name() << "\t" << tb->pos.x << "\t" << tb->pos.y << "\t" << tb->size.y << "\t" << tb->getDuration() << "\n";
+		}
+		else {
+			file << block->name() << "\t" << block->pos.x << "\t" << block->pos.y << "\n";
+		}
 	}
 	file.close();
 }
@@ -249,10 +262,19 @@ void Game::loadFromFile()
 			block = new DecelerationBlock(pos, &window);
 		}
 		else if (type == "TimerBlock") {
-			block = new TimerBlock(pos, &window);
+			int duration;
+			float height;
+			file >> height >> duration;
+
+			block = new TimerBlock(pos, &window, height, duration);
+		}
+		else if (type == "RotationBlock") {
+			float angle;
+			file >> angle;
+			block = new RotationBlock(pos, &window, sf::degrees(angle));
 		}
 		if (block) {
-			for (auto b : blocks) {
+			for (auto& b : blocks) {
 				b->blockInteract(block);
 			}
 			blocks.push_back(block);

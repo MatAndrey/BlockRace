@@ -3,13 +3,8 @@
 
 void Car::render()
 {
-    sf::Texture texture(".\\assets\\images\\car.png");
-    sf::Sprite sprite(texture);
-    sprite.setScale({ 0.1, 0.1 });
-
     sprite.setRotation(direction);
     sprite.setPosition(pos);
-
     window->draw(sprite);
 }
 
@@ -18,21 +13,27 @@ void Car::reset()
     acceleration = 0;
     speed = 0;
     direction = sf::degrees(-90);
+    directionDelta = sf::degrees(0);
 }
 
 void Car::update(sf::Time elapsed) {
     float dt = elapsed.asSeconds() * 10;
-    float friction = 1.0f;
+    const float max_dt = 0.16f;
+    if (dt > max_dt) {
+        dt = max_dt;
+    }
+    float friction = 5.0f;
 
     speed += acceleration * dt;
     if (acceleration > 0) {
         acceleration -= dt;
+        if (acceleration < 0)
+            acceleration = 0;
     }
     else if (acceleration < 0) {
         acceleration += dt;
-    }
-    if (abs(acceleration) < 0.1f) {
-        acceleration = 0;
+        if (acceleration > 0)
+            acceleration = 0;
     }
     if (acceleration == 0.0f) {
         if (speed > 0.0f) {
@@ -46,21 +47,17 @@ void Car::update(sf::Time elapsed) {
     if (std::abs(speed) < 0.1f) {
         speed = 0.0f;
     }
-    if (speed > maxSpeed) {
-        speed = maxSpeed;
+    if (std::abs(speed) > maxSpeed) {
+        speed = (speed > 0) ? maxSpeed : -maxSpeed;
     }
     else if (acceleration > 0) {
         acceleration -= dt;
     }
 
+    direction += directionDelta * speed / 50;
     float angle = direction.asRadians();
     sf::Vector2f velocity = sf::Vector2f(std::cos(angle), std::sin(angle)) * speed * dt;
     pos += velocity;
-
-    if (std::abs(acceleration) < 0.1f) {
-        acceleration = 0.0f;
-    }
-    pos += speed * dt * sf::Vector2f{cos(direction.asRadians()), sin(direction.asRadians())};
 }
 
 void Car::accelerate(float _acceleration)
@@ -89,8 +86,11 @@ void Car::setDirection(sf::Angle _dir)
 
 Car::Car(sf::Vector2f _pos, sf::RenderWindow* window) : 
     Entity(_pos, window),
-    speed(0), acceleration(0), direction(sf::degrees(-90)), directionDelta(sf::degrees(0))
-{}
+    speed(0), acceleration(0), direction(sf::degrees(-90)), directionDelta(sf::degrees(0)),
+    texture(".\\assets\\images\\car.png"), sprite(texture)
+{
+    sprite.setScale({ 0.1, 0.1 });
+}
 
 Car::~Car()
 {

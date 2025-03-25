@@ -10,6 +10,7 @@ protected:
 	sf::Font font;
 	sf::Text text;
 	static const short interactionRadius = 10;
+	bool isMoving = false;
 public:
 	sf::Vector2f size;
 	Block* nextBlock;

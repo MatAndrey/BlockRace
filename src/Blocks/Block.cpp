@@ -17,10 +17,11 @@ bool Block::blockInteract(Block* other)
 {
     if (other == this) return false;
     if (other == nullptr) return false;
-    
+
     if (nextBlock == other) {
         if (other->prevBlock) {
             other->prevBlock->nextBlock = nullptr;
+            other->prevBlock = nullptr;
         }
         nextBlock = nullptr;
         return true;
