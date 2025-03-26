@@ -83,6 +83,7 @@ void Game::handleEvents() {
 			if (mouseButtonPressed->button == sf::Mouse::Button::Left)
 			{
 				sf::Vector2f worldPos = window.mapPixelToCoords(mouseButtonPressed->position, blocksView);
+				bool textFieldActivated = false;
 				for (auto &block : blocks) {
 					if (block->name() == "StartBlock") {
 						StartBlock* sb = dynamic_cast<StartBlock*> (block);
@@ -99,10 +100,25 @@ void Game::handleEvents() {
 							break;
 						}
 					}
+					else if (block->name() == "TimerBlock") {
+						TimerBlock* tb = dynamic_cast<TimerBlock*> (block);
+						TextField* tf = tb->onClick(worldPos);
+						if (tf != nullptr) {
+							if (activeTextField) {
+								activeTextField->disable();
+							}
+							activeTextField = tf;
+							textFieldActivated = true;
+							break;
+						}
+					}
 					if (block->isInBoundingBox(worldPos) && !isRunning) {
 						startPos = worldPos;
 						movingBlock = block;
 					}
+				}
+				if (!textFieldActivated) {
+					activeTextField = nullptr;
 				}
 				if (!isRunning) {
 					for (auto block : blockStore) {
@@ -169,6 +185,11 @@ void Game::handleEvents() {
 					}
 				}
 			}
+		}
+		if (const auto* textEntred = event->getIf<sf::Event::TextEntered>()) {
+			if (activeTextField) {
+				activeTextField->onTextInput(textEntred);
+			}			
 		}
 	}
 }
@@ -262,7 +283,7 @@ void Game::loadFromFile()
 			block = new DecelerationBlock(pos, &window);
 		}
 		else if (type == "TimerBlock") {
-			int duration;
+			double duration;
 			float height;
 			file >> height >> duration;
 

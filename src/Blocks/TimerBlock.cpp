@@ -22,7 +22,7 @@ void TimerBlock::render()
 
     window->draw(text, transform);
 
-    field.pos = pos + sf::Vector2f{ 5, 5 };
+    field.pos = pos + sf::Vector2f{ 55, 7 };
     field.render();
 }
 
@@ -59,11 +59,12 @@ float TimerBlock::getInnerHeight()
     return 0.0;
 }
 
-TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, float height, int durationMs) :
-    Block(_pos, { 120, height }, window), innerNextBlock(nullptr), timerDuration(sf::milliseconds(durationMs)), elapsedTime(sf::seconds(0)),
+TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, float height, double durationSecs) :
+    Block(_pos, { 120, height }, window), innerNextBlock(nullptr), timerDuration(sf::seconds(durationSecs)), elapsedTime(sf::seconds(0)),
     shape1({ 20, 100 }), shape2({ 25, 25 }), shape3({ 75, 30 }), shape4({ 25, 5 }), shape5({20, 30}),
-    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), isWorking(false), field(pos + sf::Vector2f{5, 5}, window, {40, 20})
+    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), isWorking(false), field(pos, window, {39, 16})
 {
+    field.setText(std::to_string(durationSecs));
     float offset = size.y - 30;
 
     shape1.setFillColor(sf::Color(44, 122, 65));
@@ -90,7 +91,7 @@ TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, float height
     shape8.setFillColor(sf::Color(44, 122, 65));
     shape8.setPosition({ 20, offset + 30 });
 
-    text.setString(L"1 секунду");
+    text.setString(L"В течен.           сек");
     text.setCharacterSize(14);
     text.setPosition(sf::Vector2f{ 5, 8 });
 
@@ -171,6 +172,7 @@ Block* TimerBlock::update(Car& car)
         clock.restart();
         elapsedTime = sf::seconds(0);
         isWorking = true;
+        updateDuration();
         return this;
     }
 }
@@ -191,12 +193,30 @@ std::string TimerBlock::name()
     return "TimerBlock";
 }
 
-int TimerBlock::getDuration()
+double TimerBlock::getDuration()
 {
-    return timerDuration.asMilliseconds();
+    updateDuration();
+    return timerDuration.asSeconds();
 }
 
 void TimerBlock::reset()
 {
     isWorking = false;
+}
+
+TextField* TimerBlock::onClick(sf::Vector2f mousePos)
+{
+    return field.onClick(mousePos);
+}
+
+void TimerBlock::updateDuration()
+{
+    try {
+        float newDuration = std::stof(field.getText());
+        timerDuration = sf::seconds(newDuration);
+    }
+    catch (...) {
+        field.setText("1");
+        timerDuration = sf::seconds(1);
+    }
 }

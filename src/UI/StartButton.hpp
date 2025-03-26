@@ -4,6 +4,9 @@
 
 class StartButton : public Entity {
 	bool state;
+	sf::CircleShape triangle;
+	sf::RectangleShape rectangle;
+	sf::VertexArray outline;
 public:
 	StartButton(sf::Vector2f _pos, sf::RenderWindow* window);
 	~StartButton();

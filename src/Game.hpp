@@ -24,6 +24,7 @@ class Game {
 	Block* nextBlockToUpdate = nullptr;
 	StartBlock* activeStartBlock = nullptr;
 	bool isRunning = false;
+	TextField* activeTextField = nullptr;
 
 	unsigned initWidth;
 	unsigned initHeight;
