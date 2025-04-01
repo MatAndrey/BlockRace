@@ -27,7 +27,7 @@ add_executable(BlockRace
     "src/UI/StartButton.cpp" 
     "src/Blocks/RotationBlock.cpp"
     "src/UI/TextField.cpp"
- "src/UI/NumberField.cpp")
+ "src/UI/NumberField.cpp" "src/Blocks/RotationBlock.cpp")
 
 # Добавление assets в билд
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
