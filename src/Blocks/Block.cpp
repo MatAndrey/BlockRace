@@ -3,7 +3,8 @@
 
 Block::Block(sf::Vector2f _pos, sf::Vector2f _size, sf::RenderWindow* window) :
     Entity(_pos, window), size(_size), nextBlock(nullptr), outline(sf::PrimitiveType::LineStrip),
-    font(".\\assets\\fonts\\Share-Tech-CYR.otf"), text(font), canBeChild(true), prevBlock(nullptr)
+    font(".\\assets\\fonts\\Share-Tech-CYR.otf"), text(font), canBeChild(true), prevBlock(nullptr),
+    timeToWork(sf::milliseconds(500))
 {}
 
 Block::~Block() {}
@@ -44,6 +45,39 @@ bool Block::blockInteract(Block* other)
         }
     }
     return false;
+}
+
+sf::Time Block::update(Car& car, sf::Time elapsed)
+{
+    if (elapsed < timeToWork) {
+        activate(car);
+        return sf::seconds(0);
+    }
+    else {
+        deactivate(car);
+        return timeToWork;
+    }
+}
+
+Block* Block::getNext()
+{
+    return nextBlock;
+}
+
+void Block::activate(Car& car)
+{
+    isRunning = true;
+    for (int i = 0; i < outline.getVertexCount(); i++) {
+        outline[i].color = sf::Color::Blue;
+    }
+}
+
+void Block::deactivate(Car& car)
+{
+    isRunning = false;
+    for (int i = 0; i < outline.getVertexCount(); i++) {
+        outline[i].color = sf::Color::White;
+    }
 }
 
 void Block::moveBy(sf::Vector2f delta)

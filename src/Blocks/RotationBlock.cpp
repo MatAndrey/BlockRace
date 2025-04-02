@@ -62,22 +62,19 @@ void RotationBlock::render()
     window->draw(text, transform);
 }
 
-Block* RotationBlock::update(Car& car)
-{
-    car.setDirection(direction);
-    if (nextBlock) {
-        return nextBlock;
-    }
-    else {
-        return nullptr;
-    }
-}
-
 std::string RotationBlock::name()
 {
     return "RotationBlock";
 }
 
-RotationBlock::RotationBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::Angle _dir)
+void RotationBlock::activate(Car& car)
 {
+    Block::activate(car);
+    car.setDirection(direction);
+}
+
+void RotationBlock::deactivate(Car& car)
+{
+    Block::deactivate(car);
+    car.setDirection(sf::degrees(0));
 }

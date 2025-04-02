@@ -60,10 +60,11 @@ float TimerBlock::getInnerHeight()
 }
 
 TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, float height, double durationSecs) :
-    Block(_pos, { 120, height }, window), innerNextBlock(nullptr), timerDuration(sf::seconds(durationSecs)), elapsedTime(sf::seconds(0)),
+    Block(_pos, { 120, height }, window), innerNextBlock(nullptr), elapsedTime(sf::seconds(0)),
     shape1({ 20, 100 }), shape2({ 25, 25 }), shape3({ 75, 30 }), shape4({ 25, 5 }), shape5({20, 30}),
-    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), isWorking(false), field(pos, window, {39, 16})
+    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), field(pos, window, {39, 16})
 {
+    timeToWork = sf::seconds(durationSecs);
     field.setText(std::to_string(durationSecs));
     float offset = size.y - 30;
 
@@ -146,34 +147,38 @@ TimerBlock* TimerBlock::clone()
     return new TimerBlock(pos, window, size.y, getDuration());
 }
 
-Block* TimerBlock::update(Car& car)
+
+sf::Time TimerBlock::update(Car& car, sf::Time elapsed)
 {
-    if (isWorking) {
-        elapsedTime += clock.restart();
-        if (elapsedTime < timerDuration) {
-            Block* blockToUpdate = innerNextBlock;
-            while (blockToUpdate) {
-                Block* newBlockToUpdate = blockToUpdate->update(car);
-                if (newBlockToUpdate == blockToUpdate) {
-                    break;
-                }
-                else {
-                    blockToUpdate = newBlockToUpdate;
-                }
-            }
-            return this;
-        }
-        else {
-            isWorking = false;
-            return nextBlock;
-        }
+    if (elapsed < timeToWork) {
+        if(!isRunning)
+            activate(car);
+        return sf::seconds(0);
     }
     else {
-        clock.restart();
-        elapsedTime = sf::seconds(0);
-        isWorking = true;
-        updateDuration();
-        return this;
+        deactivate(car);
+        return timeToWork;
+    }
+}
+
+void TimerBlock::activate(Car& car)
+{
+    updateDuration();
+    Block::activate(car);
+    Block* nextInner = innerNextBlock;
+    while (nextInner) {
+        nextInner->activate(car);
+        nextInner = nextInner->getNext();
+    }
+}
+
+void TimerBlock::deactivate(Car& car)
+{
+    Block::deactivate(car);
+    Block* nextInner = innerNextBlock;
+    while (nextInner) {
+        nextInner->deactivate(car);
+        nextInner = nextInner->getNext();
     }
 }
 
@@ -196,12 +201,7 @@ std::string TimerBlock::name()
 double TimerBlock::getDuration()
 {
     updateDuration();
-    return timerDuration.asSeconds();
-}
-
-void TimerBlock::reset()
-{
-    isWorking = false;
+    return timeToWork.asSeconds();
 }
 
 TextField* TimerBlock::onClick(sf::Vector2f mousePos)
@@ -213,10 +213,10 @@ void TimerBlock::updateDuration()
 {
     try {
         float newDuration = std::stof(field.getText());
-        timerDuration = sf::seconds(newDuration);
+        timeToWork = sf::seconds(newDuration);
     }
     catch (...) {
         field.setText("1");
-        timerDuration = sf::seconds(1);
+        timeToWork = sf::seconds(1);
     }
 }

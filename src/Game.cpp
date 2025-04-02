@@ -5,7 +5,9 @@ Game::Game() :
 	initHeight(1080),
 	initWidth(1920),
 	blockStoreWidth(150),
-	car({ 10, 10 }, & window)
+	car({ 10, 10 }, & window),
+	bg(".\\assets\\images\\map.jpg"),
+	raceBackground(bg)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 
@@ -23,9 +25,8 @@ Game::Game() :
 	blockStore.push_back(new TimerBlock(sf::Vector2f(0, 0), &window));
 	blockStore.push_back(new AccelerationBlock(sf::Vector2f(0, 0), &window));
 	blockStore.push_back(new DecelerationBlock(sf::Vector2f(0, 0), &window));
-	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), &window, sf::degrees(1.5)));
-	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), &window, sf::degrees(-1.5)));
-	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), &window, sf::degrees(0)));
+	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), &window, sf::degrees(5)));
+	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), &window, sf::degrees(-5)));
 
 	float y = 10;
 	for (auto block : blockStore) {
@@ -90,9 +91,10 @@ void Game::handleEvents() {
 						if (sb->isMouseOver(worldPos) && (sb == activeStartBlock || !isRunning)) {
 							bool chainState = sb->click(worldPos);
 							if (chainState) {
-								nextBlockToUpdate = sb;
+								nextBlockToUpdate = sb->getNext();
 								activeStartBlock = sb;
 								isRunning = true;
+								elapsed = sf::seconds(0);
 							}
 							else {
 								reset();
@@ -199,9 +201,9 @@ void Game::render()
     window.clear(sf::Color(100, 100, 100));
 
 	window.setView(raceView);
-	sf::RectangleShape raceBackground;
-	raceBackground.setFillColor(sf::Color::White);
-	raceBackground.setSize({ 1920, 1080 });
+	
+	raceBackground.setScale({1, 1});
+	raceView.setCenter(car.pos);
 	window.draw(raceBackground);
 	car.render();
 	
@@ -232,15 +234,11 @@ void Game::render()
 void Game::reset()
 {
 	car.reset();
-	car.moveTo({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 	nextBlockToUpdate = nullptr;
 	activeStartBlock = nullptr;
 	isRunning = false;
 	for (const auto& block : blocks) {
-		if (block->name() == "TimerBlock") {
-			TimerBlock* tb = dynamic_cast<TimerBlock*>(block);
-			tb->reset();
-		}
+		block->deactivate(car);
 	}
 }
 
@@ -295,23 +293,28 @@ void Game::loadFromFile()
 			block = new RotationBlock(pos, &window, sf::degrees(angle));
 		}
 		if (block) {
-			for (auto& b : blocks) {
-				b->blockInteract(block);
-			}
 			blocks.push_back(block);
 		}
-		
 	}
 	file.close();
-
+	for (Block* a : blocks) {
+		for (Block* b : blocks) {
+			a->blockInteract(b);
+		}
+	}
 }
 
 void Game::update()
 {
-	sf::Time elapsed = clock.restart();
+	sf::Time dt = clock.restart();
+	elapsed += dt;
+
 	if (nextBlockToUpdate) {
-		nextBlockToUpdate = nextBlockToUpdate->update(car);
+		elapsed -= nextBlockToUpdate->update(car, elapsed);
+		if (!nextBlockToUpdate->isRunning) {			
+			nextBlockToUpdate = nextBlockToUpdate->getNext();
+		}
 	}
 
-	car.update(elapsed);
+	car.update(dt);
 }

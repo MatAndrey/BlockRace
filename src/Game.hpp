@@ -30,6 +30,10 @@ class Game {
 	unsigned initHeight;
 	unsigned blockStoreWidth;
 	sf::Clock clock;
+	sf::Time elapsed;
+
+	sf::Texture bg;
+	sf::Sprite raceBackground;
 
 	void handleEvents();
 	void update();

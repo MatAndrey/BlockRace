@@ -48,15 +48,16 @@ void DecelerationBlock::render()
     window->draw(text, transform);
 }
 
-Block* DecelerationBlock::update(Car& car)
+void DecelerationBlock::activate(Car& car)
 {
-    car.decelerate(deceleration);
-    if (nextBlock) {
-        return nextBlock;
-    }
-    else {
-        return nullptr;
-    }
+    Block::activate(car);
+    car.decelerate(true);
+}
+
+void DecelerationBlock::deactivate(Car& car)
+{
+    Block::deactivate(car);
+    car.decelerate(false);
 }
 
 std::string DecelerationBlock::name()

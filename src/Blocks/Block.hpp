@@ -10,12 +10,13 @@ protected:
 	sf::Font font;
 	sf::Text text;
 	static const short interactionRadius = 10;
-	bool isMoving = false;
+	sf::Time timeToWork;
 public:
 	sf::Vector2f size;
 	Block* nextBlock;
 	Block* prevBlock;
 	bool canBeChild;
+	bool isRunning = false;
 
 	Block(sf::Vector2f _pos, sf::Vector2f _size, sf::RenderWindow* window);
 	virtual ~Block();
@@ -26,6 +27,9 @@ public:
 	virtual bool blockInteract(Block*);
 	virtual Block* clone() = 0;
 	virtual void render() = 0;
-	virtual Block* update(Car& car) = 0;
+	virtual sf::Time update(Car& car, sf::Time elapsed);
 	virtual std::string name() = 0;
+	virtual Block* getNext();
+	virtual void activate(Car& car);
+	virtual void deactivate(Car& car);
 };

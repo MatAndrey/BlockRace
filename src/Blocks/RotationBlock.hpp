@@ -14,6 +14,7 @@ public:
 	float getAngle();
 	virtual RotationBlock* clone();
 	virtual void render();
-	virtual Block* update(Car& car);
 	virtual std::string name();
+	virtual void activate(Car& car);
+	virtual void deactivate(Car& car);
 };

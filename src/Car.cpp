@@ -4,7 +4,7 @@
 void Car::render()
 {
     sprite.setRotation(direction);
-    sprite.setPosition(pos);
+    sprite.setPosition(sf::Vector2f(pos));
     window->draw(sprite);
 }
 
@@ -12,71 +12,57 @@ void Car::reset()
 {
     acceleration = 0;
     speed = 0;
-    direction = sf::degrees(-90);
+    pos = {1000, 300};
+    direction = sf::degrees(180);
     directionDelta = sf::degrees(0);
 }
 
 void Car::update(sf::Time elapsed) {
+    const float fixed_dt = 1.0f / 60.0f;
     float dt = elapsed.asSeconds() * 10;
-    const float max_dt = 0.16f;
-    if (dt > max_dt) {
-        dt = max_dt;
+    while (dt > fixed_dt) {
+        updatePhysics(fixed_dt);
+        dt -= fixed_dt;
     }
-    float friction = 5.0f;
+    if (dt > 0) {
+        updatePhysics(dt);
+    }
+}
 
-    speed += acceleration * dt;
-    if (acceleration > 0) {
-        acceleration -= dt;
-        if (acceleration < 0)
-            acceleration = 0;
+void Car::updatePhysics(float dt) {
+    if (acceleration) {
+        speed += 0.1;
     }
-    else if (acceleration < 0) {
-        acceleration += dt;
-        if (acceleration > 0)
-            acceleration = 0;
+    if (abs(speed) > maxSpeed) {
+        speed = abs(speed) / speed * maxSpeed;
     }
-    if (acceleration == 0.0f) {
-        if (speed > 0.0f) {
-            speed = std::max(0.0f, speed - friction * dt);
-        }
-        else if (speed < 0.0f) {
-            speed = std::min(0.0f, speed + friction * dt);
-        }
-    }
+    speed *= std::exp(-friction * dt * (deceleration ? 8 : 1));
+ 
 
-    if (std::abs(speed) < 0.1f) {
+    if (std::abs(speed) < 0.05f) {
         speed = 0.0f;
     }
-    if (std::abs(speed) > maxSpeed) {
-        speed = (speed > 0) ? maxSpeed : -maxSpeed;
-    }
-    else if (acceleration > 0) {
-        acceleration -= dt;
-    }
 
-    direction += directionDelta * speed / 50;
+    if (abs(speed) > 2) {
+        direction += directionDelta * dt;
+    }    
     float angle = direction.asRadians();
-    sf::Vector2f velocity = sf::Vector2f(std::cos(angle), std::sin(angle)) * speed * dt;
-    pos += velocity;
+
+    double dx = std::cos(angle) * speed * dt;
+    double dy = std::sin(angle) * speed * dt;
+
+    pos.x += dx;
+    pos.y += dy;
 }
 
-void Car::accelerate(float _acceleration)
+void Car::accelerate(bool state)
 {
-    acceleration += _acceleration;
-    if (acceleration > maxAcceleration) {
-        acceleration = maxAcceleration;
-    }
-    if (acceleration < -maxAcceleration) {
-        acceleration = -maxAcceleration;
-    }
+    acceleration = state;
 }
 
-void Car::decelerate(float _deceleration)
+void Car::decelerate(bool state)
 {
-    acceleration -= _deceleration;
-    if (acceleration < 0) {
-        acceleration = 0;
-    }
+    deceleration = state;
 }
 
 void Car::setDirection(sf::Angle _dir)

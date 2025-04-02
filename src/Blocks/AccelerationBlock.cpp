@@ -2,7 +2,7 @@
 #include <iostream>
 
 AccelerationBlock::AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window):
-	Block(_pos, {120, 30}, window), acceleration(1), shape1({20, 30}), shape2({25, 30}), shape3({75, 30})
+	Block(_pos, {120, 30}, window), shape1({20, 30}), shape2({25, 30}), shape3({75, 30})
 {
     shape1.setFillColor(sf::Color(44, 71, 122));
 
@@ -49,17 +49,6 @@ void AccelerationBlock::render()
     window->draw(text, transform);
 }
 
-Block* AccelerationBlock::update(Car& car)
-{
-    car.accelerate(acceleration);
-	if (nextBlock) {
-        return nextBlock;
-    }
-    else {
-        return nullptr;
-    }
-}
-
 std::string AccelerationBlock::name()
 {
     return "AccelerationBlock";
@@ -68,4 +57,16 @@ std::string AccelerationBlock::name()
 bool AccelerationBlock::handleEvent(sf::Event& event, sf::Vector2f mousePos)
 {
     return false;
+}
+
+void AccelerationBlock::activate(Car& car)
+{
+    Block::activate(car);
+    car.accelerate(true);    
+}
+
+void AccelerationBlock::deactivate(Car& car)
+{
+    Block::deactivate(car);
+    car.accelerate(false);
 }
