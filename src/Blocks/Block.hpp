@@ -24,7 +24,7 @@ public:
 	virtual void moveBy(sf::Vector2f);
 	float getChainHeight();
 	virtual bool isInBoundingBox(sf::Vector2f point);
-	virtual bool blockInteract(Block*);
+	virtual bool blockInteract(Block*, bool disconneting = true);
 	virtual Block* clone() = 0;
 	virtual void render() = 0;
 	virtual sf::Time update(Car& car, sf::Time elapsed);

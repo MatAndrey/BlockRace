@@ -121,9 +121,9 @@ void TimerBlock::moveBy(sf::Vector2f delta)
     }
 }
 
-bool TimerBlock::blockInteract(Block* other)
+bool TimerBlock::blockInteract(Block* other, bool disconneting)
 {
-    if (innerNextBlock == other && innerNextBlock != nullptr) {
+    if (innerNextBlock == other && innerNextBlock != nullptr && disconneting) {
         innerNextBlock->prevBlock = nullptr;
         innerNextBlock = nullptr;
     }

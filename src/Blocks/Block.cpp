@@ -14,12 +14,12 @@ bool Block::isInBoundingBox(sf::Vector2f point) {
     return rect.contains(point);
 }
 
-bool Block::blockInteract(Block* other)
+bool Block::blockInteract(Block* other, bool disconneting)
 {
     if (other == this) return false;
     if (other == nullptr) return false;
 
-    if (nextBlock == other) {
+    if (nextBlock == other && disconneting) {
         if (other->prevBlock) {
             other->prevBlock->nextBlock = nullptr;
             other->prevBlock = nullptr;

@@ -17,6 +17,7 @@ class Level {
     sf::Sprite mapSprite;
     sf::Vector2f carInitPos;
     sf::Angle carInitDir;
+    bool checkCollision();
 public:
     Level(const std::string& path, sf::RenderWindow* window, Car* car);
 

@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include <iostream>
+#include <sstream>
 
 Game::Game() :
 	initHeight(1080),
@@ -201,7 +202,6 @@ void Game::render()
 
 	window.setView(raceView);
 	level.render(raceView);
-	car.render();
 	
 	window.setView(blocksView);
 
@@ -297,7 +297,7 @@ void Game::loadFromFile()
 	file.close();
 	for (Block* a : blocks) {
 		for (Block* b : blocks) {
-			a->blockInteract(b);
+			a->blockInteract(b, false);
 		}
 	}
 }

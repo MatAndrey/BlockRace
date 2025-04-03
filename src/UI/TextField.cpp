@@ -46,7 +46,7 @@ void TextField::setText(const std::string& newText)
 {
     inputString = newText;
     text.setString(inputString);
-    while (text.getLocalBounds().size.x > size.x - 5) {
+    while (text.getLocalBounds().size.x > size.x - 5 || inputString.back() == '0' || inputString.back() == '.') {
         inputString.pop_back();
         text.setString(inputString);
     }

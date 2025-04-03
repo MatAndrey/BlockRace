@@ -25,7 +25,7 @@ public:
 	TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, float height = 90, double durationMcs = 1);
 	~TimerBlock();
 	virtual void moveBy(sf::Vector2f);
-	virtual bool blockInteract(Block*);
+	virtual bool blockInteract(Block*, bool disconeting = true);
 	virtual TimerBlock* clone();
 	virtual void render();
 	virtual sf::Time update(Car& car, sf::Time elapsed);

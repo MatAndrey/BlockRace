@@ -3,17 +3,19 @@
 
 void Car::render()
 {
-    sprite.setRotation(direction);
-    sprite.setPosition(sf::Vector2f(pos));
-    window->draw(sprite);
+    sf::Transform transform;
+    transform.translate(pos);
+    transform.rotate(direction);
+    window->draw(sprite, transform);
+
 }
 
 void Car::reset(sf::Vector2f defaultPos, sf::Angle defaultDir)
 {
+    pos = defaultPos;
+    direction = defaultDir;
     acceleration = 0;
     speed = 0;
-    pos = { 1000, 300 };
-    direction = sf::degrees(180);
     directionDelta = sf::degrees(0);
 }
 
@@ -70,12 +72,21 @@ void Car::setDirection(sf::Angle _dir)
     directionDelta = _dir;
 }
 
-sf::FloatRect Car::getBounds() const
+const sf::Transform& Car::getTransform() const
+{
+    sf::Transform t;
+    t.translate(pos);
+    t.rotate(direction);
+    return t;
+}
+
+sf::FloatRect Car::getGlobalBounds() const
 {
     return sprite.getGlobalBounds();
 }
 
-Car::Car(sf::Vector2f _pos, sf::RenderWindow* window) : 
+
+Car::Car(sf::Vector2f _pos, sf::RenderWindow* window) :
     Entity(_pos, window),
     speed(0), acceleration(0), direction(sf::degrees(-90)), directionDelta(sf::degrees(0)),
     texture(".\\assets\\images\\car.png"), sprite(texture)

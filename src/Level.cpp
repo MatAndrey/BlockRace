@@ -1,58 +1,6 @@
 #include "Level.hpp"
 #include <iostream>
 
-bool doSegmentsIntersect(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f q1, sf::Vector2f q2) {
-    auto crossProduct = [](sf::Vector2f a, sf::Vector2f b) {
-        return a.x * b.y - a.y * b.x;
-        };
-
-    auto subtractPoints = [](sf::Vector2f a, sf::Vector2f b) {
-        return sf::Vector2f(a.x - b.x, a.y - b.y);
-        };
-
-    sf::Vector2f r = subtractPoints(p2, p1);
-    sf::Vector2f s = subtractPoints(q2, q1);
-    float rxs = crossProduct(r, s);
-    float qpxr = crossProduct(subtractPoints(q1, p1), r);
-
-    if (rxs == 0 && qpxr == 0) {
-        // Линии коллинеарны
-        return false;
-    }
-
-    if (rxs == 0 && qpxr != 0) {
-        // Линии не пересекаются
-        return false;
-    }
-
-    float t = crossProduct(subtractPoints(q1, p1), s) / rxs;
-    float u = crossProduct(subtractPoints(q1, p1), r) / rxs;
-
-    return t >= 0 && t <= 1 && u >= 0 && u <= 1;
-}
-
-bool isCarIntersectingLine(const Car* car, const std::vector<sf::Vector2f>& linePoints) {
-    const sf::FloatRect& rect = car->getBounds();
-    std::vector<std::pair<sf::Vector2f, sf::Vector2f>> rectangleEdges = {
-        {sf::Vector2f(rect.position.x, rect.position.y), sf::Vector2f(rect.position.x, rect.position.y + rect.size.y)},
-        {sf::Vector2f(rect.position.x, rect.position.y + rect.size.y), sf::Vector2f(rect.position.x + rect.size.x, rect.position.y + rect.size.y)},
-        {sf::Vector2f(rect.position.x + rect.size.x, rect.position.y + rect.size.y), sf::Vector2f(rect.position.x + rect.size.x, rect.position.y)},
-        {sf::Vector2f(rect.position.x + rect.size.x, rect.position.y), sf::Vector2f(rect.position.x, rect.position.y)},
-    };
-
-    for (size_t i = 0; i < linePoints.size() - 1; ++i) {
-        const sf::Vector2f& lineStart = linePoints[i];
-        const sf::Vector2f& lineEnd = linePoints[i + 1];
-
-        for (const auto& edge : rectangleEdges) {
-            if (doSegmentsIntersect(edge.first, edge.second, lineStart, lineEnd)) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
 	car(car), window(window), mapTexture(), mapSprite(mapTexture)
 {
@@ -80,18 +28,95 @@ Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
 	carReset();
 }
 
+bool Level::checkCollision() {
+    if (roadBorders.empty()) return false;
+
+    // Получаем глобальные границы машины
+    const sf::FloatRect carBounds = car->getGlobalBounds();
+    const sf::Transform transform = car->getTransform();
+
+    // Размеры машины
+    float width = carBounds.size.x;
+    float height = carBounds.size.y;
+
+    // Углы машины в локальных координатах (относительно центра)
+    std::vector<sf::Vector2f> localCorners = {
+        {-width / 2, -height / 2}, // Левый верхний
+        {width / 2, -height / 2},  // Правый верхний
+        {width / 2, height / 2},   // Правый нижний
+        {-width / 2, height / 2}   // Левый нижний
+    };
+
+    // Переводим их в глобальные координаты
+    std::vector<sf::Vector2f> carCorners;
+    for (const auto& corner : localCorners) {
+        carCorners.push_back(transform.transformPoint({ carBounds.position.x + carBounds.size.x / 2 + corner.x,
+            carBounds.position.y + carBounds.size.y / 2 + corner.y }));
+    }
+
+    // Функция проверки пересечения двух отрезков
+    auto linesIntersect = [](const sf::Vector2f& p1, const sf::Vector2f& p2,
+        const sf::Vector2f& p3, const sf::Vector2f& p4) {
+            auto cross = [](const sf::Vector2f& a, const sf::Vector2f& b) {
+                return a.x * b.y - a.y * b.x;
+                };
+
+            sf::Vector2f r = p2 - p1;
+            sf::Vector2f s = p4 - p3;
+            float rxs = cross(r, s);
+            float t = cross(p3 - p1, s) / rxs;
+            float u = cross(p3 - p1, r) / rxs;
+
+            return (rxs != 0 && t >= 0 && t <= 1 && u >= 0 && u <= 1);
+        };
+
+    // Проверяем каждую сторону машины с каждым сегментом границ дороги
+    for (const auto& border : roadBorders) {
+        if (border.size() < 2) continue;
+
+        for (size_t i = 0; i < border.size() - 1; ++i) {
+            const sf::Vector2f& wallStart = border[i];
+            const sf::Vector2f& wallEnd = border[i + 1];
+
+            // Проверяем каждую сторону машины
+            for (size_t j = 0; j < carCorners.size(); ++j) {
+                size_t nextJ = (j + 1) % carCorners.size();
+                const sf::Vector2f& carStart = carCorners[j];
+                const sf::Vector2f& carEnd = carCorners[nextJ];
+
+                if (linesIntersect(carStart, carEnd, wallStart, wallEnd)) {
+                    return true; // Столкновение обнаружено
+                }
+            }
+        }
+    }
+
+    return false; // Столкновений нет
+}
+
 void Level::render(sf::View& view)
 {
-	view.setCenter(car->pos);
 	window->draw(mapSprite);
+    
+    for (const auto& border : roadBorders) {
+        sf::VertexArray lines(sf::PrimitiveType::LineStrip);
+        for (const auto& point : border) {
+            sf::Vertex v;
+            v.position = point;
+            v.color = sf::Color::Red;
+            lines.append(v);
+        }
+        window->draw(lines);
+    }
+    
+    car->render();
+    view.setCenter(car->pos);
 }
 
 void Level::update(std::function<void()> resetFunction)
 {
-    for (const auto& border : roadBorders) {
-        if (isCarIntersectingLine(car, border)) {
-            resetFunction();
-        }
+    if (checkCollision()) {
+        resetFunction();
     }
 }
 
