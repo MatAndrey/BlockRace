@@ -12,6 +12,9 @@ FetchContent_Declare(
     GIT_TAG 3.0.0  # Используем последнюю стабильную версию
 )
 FetchContent_MakeAvailable(SFML)
+# Добавление JSON
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
+FetchContent_MakeAvailable(json)
 
 # Добавляем исполняемый файл
 add_executable(BlockRace 
@@ -27,10 +30,10 @@ add_executable(BlockRace
     "src/UI/StartButton.cpp" 
     "src/Blocks/RotationBlock.cpp"
     "src/UI/TextField.cpp"
- "src/UI/NumberField.cpp" "src/Blocks/RotationBlock.cpp")
+ "src/UI/NumberField.cpp" "src/Blocks/RotationBlock.cpp" "src/Level.cpp")
 
 # Добавление assets в билд
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
 
 # Подключаем SFML к проекту
-target_link_libraries(BlockRace PRIVATE sfml-graphics sfml-window sfml-system)
+target_link_libraries(BlockRace PRIVATE sfml-graphics sfml-window sfml-system nlohmann_json::nlohmann_json)

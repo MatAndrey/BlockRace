@@ -18,7 +18,7 @@ class Car : public Entity
 	void updatePhysics(float timeDelta);
 public:
 	virtual void render();
-	void reset();
+	void reset(sf::Vector2f defaultPos, sf::Angle defaultDir);
 	void update(sf::Time elapsed);
 	void accelerate(bool state);
 	void decelerate(bool state);

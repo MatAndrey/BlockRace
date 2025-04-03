@@ -8,11 +8,20 @@ void Car::render()
     window->draw(sprite);
 }
 
-void Car::reset()
+//void Car::reset(sf::Vector2f defaultPos, sf::Angle defaultDir)
+//{
+//    pos = 500;
+//    direction = 500;
+//    acceleration = false;
+//    speed = 0;
+//    directionDelta = sf::degrees(0);
+//}
+
+void Car::reset(sf::Vector2f defaultPos, sf::Angle defaultDir)
 {
     acceleration = 0;
     speed = 0;
-    pos = {1000, 300};
+    pos = { 1000, 300 };
     direction = sf::degrees(180);
     directionDelta = sf::degrees(0);
 }

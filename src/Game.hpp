@@ -7,6 +7,7 @@
 #include "Blocks/AccelerationBlock.hpp"
 #include "Blocks/DecelerationBlock.hpp"
 #include "Blocks/RotationBlock.hpp"
+#include "Level.hpp"
 
 class Game {
 	std::list<Block*> blocks;
@@ -32,8 +33,7 @@ class Game {
 	sf::Clock clock;
 	sf::Time elapsed;
 
-	sf::Texture bg;
-	sf::Sprite raceBackground;
+	Level level;
 
 	void handleEvents();
 	void update();

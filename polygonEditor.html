@@ -99,7 +99,7 @@
                 for (let i = 1; i < points.length; i++) {
                     ctx.lineTo(points[i].x, points[i].y);
                 }
-                ctx.closePath(); // Закрывает полигон
+                ctx.closePath();
                 ctx.stroke();
             }
 
@@ -113,7 +113,7 @@
 
         function updateCoordinates() {
             coordinatesOutput.textContent = points
-                .map(point => `{${point.x.toFixed(2)}, ${point.y.toFixed(2)}}`)
+                .map(point => `[${point.x.toFixed(2)}, ${point.y.toFixed(2)}]`)
                 .join(', ');
         }
     </script>

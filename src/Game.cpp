@@ -6,8 +6,7 @@ Game::Game() :
 	initWidth(1920),
 	blockStoreWidth(150),
 	car({ 10, 10 }, & window),
-	bg(".\\assets\\images\\map.jpg"),
-	raceBackground(bg)
+	level(".\\assets\\maps\\level1.json", &window, &car)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 
@@ -201,10 +200,7 @@ void Game::render()
     window.clear(sf::Color(100, 100, 100));
 
 	window.setView(raceView);
-	
-	raceBackground.setScale({1, 1});
-	raceView.setCenter(car.pos);
-	window.draw(raceBackground);
+	level.render(raceView);
 	car.render();
 	
 	window.setView(blocksView);
@@ -233,7 +229,7 @@ void Game::render()
 
 void Game::reset()
 {
-	car.reset();
+	level.carReset();
 	nextBlockToUpdate = nullptr;
 	activeStartBlock = nullptr;
 	isRunning = false;
