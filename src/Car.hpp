@@ -23,6 +23,7 @@ public:
 	void accelerate(bool state);
 	void decelerate(bool state);
 	void setDirection(sf::Angle _dir);
+	sf::FloatRect getBounds() const;
 	Car(sf::Vector2f _pos, sf::RenderWindow* window);
 	~Car();
 };

@@ -13,4 +13,5 @@ public:
 	bool isMouseOver(sf::Vector2f pos);
 	virtual void render();
 	bool click(sf::Vector2f pos);
+	void disable();
 };

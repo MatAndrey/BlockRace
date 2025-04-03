@@ -70,3 +70,7 @@ bool StartBlock::click(sf::Vector2f mousePos)
 {
     return button.click(mousePos);
 }
+
+void StartBlock::disable() {
+    button.disable();
+}

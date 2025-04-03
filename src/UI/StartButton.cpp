@@ -18,6 +18,11 @@ bool StartButton::click(sf::Vector2f pos)
 	return state = !state;
 }
 
+void StartButton::disable()
+{
+	state = false;
+}
+
 StartButton::StartButton(sf::Vector2f _pos, sf::RenderWindow* window) : Entity(_pos, window), state(false),
 triangle(8, 3), rectangle({ 13, 13 }), outline(sf::PrimitiveType::LineStrip) 
 {

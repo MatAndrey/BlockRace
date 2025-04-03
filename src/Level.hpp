@@ -21,5 +21,6 @@ public:
     Level(const std::string& path, sf::RenderWindow* window, Car* car);
 
     void Level::render(sf::View& view);
+    void update(std::function<void()> resetFunction);
     void carReset();
 };

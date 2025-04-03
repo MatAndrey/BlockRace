@@ -8,15 +8,6 @@ void Car::render()
     window->draw(sprite);
 }
 
-//void Car::reset(sf::Vector2f defaultPos, sf::Angle defaultDir)
-//{
-//    pos = 500;
-//    direction = 500;
-//    acceleration = false;
-//    speed = 0;
-//    directionDelta = sf::degrees(0);
-//}
-
 void Car::reset(sf::Vector2f defaultPos, sf::Angle defaultDir)
 {
     acceleration = 0;
@@ -77,6 +68,11 @@ void Car::decelerate(bool state)
 void Car::setDirection(sf::Angle _dir)
 {
     directionDelta = _dir;
+}
+
+sf::FloatRect Car::getBounds() const
+{
+    return sprite.getGlobalBounds();
 }
 
 Car::Car(sf::Vector2f _pos, sf::RenderWindow* window) : 

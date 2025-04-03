@@ -17,4 +17,5 @@ public:
 	virtual Block* update(Car& car);
 	virtual std::string name();
 	bool click(sf::Vector2f pos);
+	void disable();
 };

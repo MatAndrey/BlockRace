@@ -230,6 +230,8 @@ void Game::render()
 void Game::reset()
 {
 	level.carReset();
+	if(activeStartBlock)
+		activeStartBlock->disable();
 	nextBlockToUpdate = nullptr;
 	activeStartBlock = nullptr;
 	isRunning = false;
@@ -313,4 +315,7 @@ void Game::update()
 	}
 
 	car.update(dt);
+	level.update([this]() {
+		reset();
+	});
 }
