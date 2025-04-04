@@ -9,6 +9,7 @@
 #include "Blocks/RotationBlock.hpp"
 #include "Level.hpp"
 #include "EventBus.hpp"
+#include "UI/PopupWindow.hpp"
 
 class Game {
 	std::list<Block*> blocks;
@@ -34,6 +35,7 @@ class Game {
 	sf::Time elapsed;
 
 	Level level;
+	PopupWindow popup;
 
 	void update();
 	void render();
@@ -43,7 +45,6 @@ class Game {
 	void setupEventListeners();
 
 	void handleEvents();
-	void onWindowClosed(const sf::Event::Closed& event);
 	void onKeyPressed(const sf::Event::KeyPressed& event);
 	void onWindowResized(const sf::Event::Resized& event);
 	void onMouseButtonPressed(const sf::Event::MouseButtonPressed& event);

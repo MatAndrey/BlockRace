@@ -1,4 +1,4 @@
-#include "Game.hpp"
+﻿#include "Game.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -7,7 +7,8 @@ Game::Game() :
 	initWidth(1920),
 	blockStoreWidth(150),
 	car({ 10, 10 }, & window),
-	level(".\\assets\\maps\\level1.json", &window, &car)
+	level(".\\assets\\maps\\level1.json", &window, &car),
+	popup(window)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 
@@ -62,7 +63,6 @@ void Game::loop()
 }
 
 void Game::setupEventListeners() {
-	EventBus::get().subscribe<sf::Event::Closed>(this, &Game::onWindowClosed);
 	EventBus::get().subscribe<sf::Event::KeyPressed>(this, &Game::onKeyPressed);
 	EventBus::get().subscribe<sf::Event::Resized>(this, &Game::onWindowResized);
 	EventBus::get().subscribe<sf::Event::MouseButtonPressed>(this, &Game::onMouseButtonPressed);
@@ -76,17 +76,28 @@ void Game::handleEvents() {
 	while (const std::optional event = window.pollEvent()) {
 		event->visit([](auto&& e) {
 			EventBus::get().publish(std::forward<decltype(e)>(e));
-			});
+		});
 	}
-}
-
-void Game::onWindowClosed(const sf::Event::Closed&) {
-	window.close();
 }
 
 void Game::onKeyPressed(const sf::Event::KeyPressed& keyPressed) {
 	if (keyPressed.scancode == sf::Keyboard::Scan::Escape) {
 		window.close();
+		//popup.show(L"Подтверждение выхода", L"Сохранить изменения?",
+		//	{ L"Сохранить", L"Не сохранять", L"Отмена" },
+		//	[this](int option) {
+		//		switch (option) {
+		//		case 0:
+		//			saveToFile();
+		//			window.close();
+		//			break;
+		//		case 1:
+		//			window.close();
+		//			break;
+		//		case 2:
+		//			break;
+		//		}
+		//	});
 	}
 }
 
@@ -123,7 +134,7 @@ void Game::onMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseButton
 			}
 		}
 
-		if (!movingBlock && blocksViewRect.contains(sf::Vector2f(mouseButtonPressed.position)) && worldPos.x > blockStoreWidth) {
+		if (!movingBlock && blocksViewRect.contains(sf::Vector2f(mouseButtonPressed.position)) && worldPos.x > blockStoreWidth && !isRunning) {
 			leftHold = true;
 		}
 
@@ -227,6 +238,9 @@ void Game::onSimulationStop(const StopSimulationEvent& event)
 		for (const auto& block : blocks) {
 			block->deactivate(car);
 		}
+		popup.show(L"Авария", L"Машинка выкатилась за пределы дороги",
+			{ L"Заново"},
+			[this](int option) {});
 	}
 }
 
@@ -236,7 +250,7 @@ void Game::render()
 
 	window.setView(raceView);
 	level.render(raceView);
-	
+
 	window.setView(blocksView);
 
 	sf::RectangleShape blocksBackground;
@@ -256,6 +270,7 @@ void Game::render()
 	}
 
 	window.setView(appView);
+	popup.render();
 
     window.display();
     
