@@ -12,6 +12,8 @@ Game::Game() :
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 
 	appView.setViewport(sf::FloatRect({ 0, 0 }, { 1, 1 }));
+	appView.setSize({ window.getSize().x * 1.0f, window.getSize().y * 1.0f });
+	appView.setCenter({ window.getSize().x / 2.0f, window.getSize().y / 2.0f });
 
 	raceView.setViewport(sf::FloatRect({ 0.25f, 0.05f }, { 0.75f, 0.9f }));
 	raceView.setSize({ 0.75f * window.getSize().x, 0.9f * window.getSize().y });
@@ -89,6 +91,9 @@ void Game::onKeyPressed(const sf::Event::KeyPressed& keyPressed) {
 }
 
 void Game::onWindowResized(const sf::Event::Resized&) {
+	appView.setSize({ window.getSize().x * 1.0f, window.getSize().y * 1.0f });
+	appView.setCenter({ window.getSize().x / 2.0f, window.getSize().y / 2.0f });
+
 	blocksView.setSize({ 0.25f * window.getSize().x, 0.9f * window.getSize().y });
 	blocksView.setCenter({ 0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 
@@ -99,8 +104,10 @@ void Game::onWindowResized(const sf::Event::Resized&) {
 void Game::onMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseButtonPressed) {
 	if (mouseButtonPressed.button == sf::Mouse::Button::Left) {
 		sf::FloatRect blocksViewRect(blocksView.getCenter() - blocksView.getSize() / 2.f, blocksView.getSize());
+		sf::Vector2f worldPos = window.mapPixelToCoords(mouseButtonPressed.position, blocksView);
+
 		if (blocksViewRect.contains(sf::Vector2f(mouseButtonPressed.position))) {
-			sf::Vector2f worldPos = window.mapPixelToCoords(mouseButtonPressed.position, blocksView);
+			
 			EventBus::get().publish(BlockPressedEvent{
 					worldPos,
 					sf::Mouse::Button::Left,
@@ -108,14 +115,16 @@ void Game::onMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseButton
 				});
 
 		}
-		sf::Vector2f worldPos = window.mapPixelToCoords(mouseButtonPressed.position, blocksView);
-		bool textFieldActivated = false;
 
+		startPos = worldPos;
 		for (auto& block : blocks) {
 			if (block->isInBoundingBox(worldPos) && !isRunning) {
-				startPos = worldPos;
 				movingBlock = block;
 			}
+		}
+
+		if (!movingBlock && blocksViewRect.contains(sf::Vector2f(mouseButtonPressed.position)) && worldPos.x > blockStoreWidth) {
+			leftHold = true;
 		}
 
 		if (!isRunning) {
@@ -132,6 +141,7 @@ void Game::onMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseButton
 
 void Game::onMouseButtonReleased(const sf::Event::MouseButtonReleased& mouseButtonReleased) {
 	if (mouseButtonReleased.button == sf::Mouse::Button::Left && !isRunning) {
+		leftHold = false;
 		for (auto iter = blocks.begin(); iter != blocks.end();) {
 			Block* block = *iter;
 
@@ -155,10 +165,11 @@ void Game::onMouseButtonReleased(const sf::Event::MouseButtonReleased& mouseButt
 void Game::onMouseMoved(const sf::Event::MouseMoved& mouseMoved) {
 	if (!nextBlockToUpdate) {
 		bool isOver = false;
+		sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved.position, blocksView);
 		for (Block* block : blocks) {
 			if (block->name() == "StartBlock") {
 				StartBlock* sb = dynamic_cast<StartBlock*>(block);
-				if (sb->isMouseOver(window.mapPixelToCoords(mouseMoved.position, blocksView))) {
+				if (sb->isMouseOver(worldPos)) {
 					isOver = true;
 					break;
 				}
@@ -179,11 +190,20 @@ void Game::onMouseMoved(const sf::Event::MouseMoved& mouseMoved) {
 				blocksView.getCenter().y - blocksView.getSize().y / 2 },
 				{ blocksView.getSize().x, blocksView.getSize().y });
 
-			sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved.position, blocksView);
+			
 			if (viewBounds.contains(worldPos)) {
 				movingBlock->moveBy(worldPos - startPos);
 				startPos = worldPos;
 			}
+		}
+		else if(leftHold) {
+			for (Block* block : blocks) {
+				block->pos += worldPos - startPos;
+				if (block->pos.x < blockStoreWidth) {
+					block->pos.x = blockStoreWidth;
+				}
+			}
+			startPos = worldPos;
 		}
 	}
 }

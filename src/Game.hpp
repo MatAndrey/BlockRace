@@ -23,6 +23,7 @@ class Game {
 
 	sf::Vector2f startPos = { 0, 0 };
 	Block* movingBlock = nullptr;
+	bool leftHold = false;
 	Block* nextBlockToUpdate = nullptr;
 	bool isRunning = false;
 
