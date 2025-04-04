@@ -36,6 +36,9 @@ StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window):
         outline[i].position = vertexes[i];
         outline[i].color = sf::Color::White;
     }
+
+    EventBus::get().subscribe<BlockPressedEvent>(this, &StartBlock::handlePress);
+    EventBus::get().subscribe<DisableBlocksEvent>(this, &StartBlock::handleDisable);
 }
 
 bool StartBlock::isMouseOver(sf::Vector2f pos)
@@ -66,11 +69,23 @@ std::string StartBlock::name()
     return "StartBlock";
 }
 
-bool StartBlock::click(sf::Vector2f mousePos)
+void StartBlock::handlePress(const BlockPressedEvent& event)
 {
-    return button.click(mousePos);
+    if (button.isMouseOver(event.worldPos)) {
+        if (button.getState()) {
+            button.setState(false);
+            EventBus::get().publish(StopSimulationEvent{});
+        }
+        else {
+            if (!event.isRunning) {
+                button.setState(true);
+                EventBus::get().publish(StartSimulationEvent{ this });
+            }            
+        }
+    }
 }
 
-void StartBlock::disable() {
-    button.disable();
+void StartBlock::handleDisable(const DisableBlocksEvent& event)
+{
+    button.setState(false);
 }

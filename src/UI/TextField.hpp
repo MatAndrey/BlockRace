@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include "../Entity.hpp"
+#include "../EventBus.hpp"
 
 class TextField : public Entity {
     sf::RectangleShape background;
@@ -19,8 +20,9 @@ public:
     virtual void render();
     std::string getText() const;
     void setText(const std::string& newText);
-    virtual void onTextInput(const sf::Event::TextEntered* event);
-    TextField* onClick(sf::Vector2f mousePos);
     void disable();
     void enable();
+    void handlePress(const BlockPressedEvent& event);
+    void handleTextEntered(const sf::Event::TextEntered& event);
+    virtual void addCharacter(char32_t c);
 };

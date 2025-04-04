@@ -16,6 +16,9 @@ TextField::TextField(sf::Vector2f _pos, sf::RenderWindow* window, sf::Vector2f s
 
     cursor.setSize({ 1, size.y - 4 });
     cursor.setFillColor(sf::Color::Black);
+
+    EventBus::get().subscribe<BlockPressedEvent>(this, &TextField::handlePress);
+    EventBus::get().subscribe<sf::Event::TextEntered>(this, &TextField::handleTextEntered);
 }
 
 void TextField::render()
@@ -52,33 +55,6 @@ void TextField::setText(const std::string& newText)
     }
 }
 
-void TextField::onTextInput(const sf::Event::TextEntered* textEntered) {
-    if (textEntered->unicode == '\b' && !inputString.empty()) {
-        inputString.pop_back();
-    }
-    else if (textEntered->unicode >= 32 && textEntered->unicode <= 126) {
-        inputString += static_cast<char>(textEntered->unicode);
-    }
-    text.setString(inputString);
-    if (text.getLocalBounds().size.x > size.x - 1) {
-        inputString.pop_back();
-        text.setString(inputString);
-    }
-}
-
-TextField* TextField::onClick(sf::Vector2f mousePos)
-{
-    sf::FloatRect rect(pos, size);
-    if(rect.contains(mousePos)) {
-        enable();
-        return this;
-    }
-    else {
-        disable();
-        return nullptr;
-    }
-}
-
 void TextField::disable()
 {
     isActive = false;
@@ -89,4 +65,36 @@ void TextField::enable()
 {
     isActive = true;
     background.setOutlineColor(sf::Color::Blue);
+}
+
+void TextField::handlePress(const BlockPressedEvent& event)
+{
+    sf::FloatRect rect(pos, size);
+    if (rect.contains(event.worldPos)) {
+        enable();
+    }
+    else {
+        disable();
+    }
+}
+
+void TextField::handleTextEntered(const sf::Event::TextEntered& event)
+{
+    if(isActive)
+        addCharacter(event.unicode);
+}
+
+void TextField::addCharacter(char32_t c)
+{
+    if (c == '\b' && !inputString.empty()) {
+        inputString.pop_back();
+    }
+    else if (c >= 32 && c <= 126) {
+        inputString += static_cast<char>(c);
+    }
+    text.setString(inputString);
+    if (text.getLocalBounds().size.x > size.x - 1) {
+        inputString.pop_back();
+        text.setString(inputString);
+    }
 }

@@ -32,7 +32,6 @@ public:
 	virtual bool isInBoundingBox(sf::Vector2f point);
 	virtual std::string name();
 	double getDuration();
-	TextField* onClick(sf::Vector2f mousePos);
 	void updateDuration();
 	virtual void activate(Car& car);
 	virtual void deactivate(Car& car);

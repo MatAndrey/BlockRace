@@ -8,6 +8,7 @@
 #include "Blocks/DecelerationBlock.hpp"
 #include "Blocks/RotationBlock.hpp"
 #include "Level.hpp"
+#include "EventBus.hpp"
 
 class Game {
 	std::list<Block*> blocks;
@@ -23,9 +24,7 @@ class Game {
 	sf::Vector2f startPos = { 0, 0 };
 	Block* movingBlock = nullptr;
 	Block* nextBlockToUpdate = nullptr;
-	StartBlock* activeStartBlock = nullptr;
 	bool isRunning = false;
-	TextField* activeTextField = nullptr;
 
 	unsigned initWidth;
 	unsigned initHeight;
@@ -35,13 +34,22 @@ class Game {
 
 	Level level;
 
-	void handleEvents();
 	void update();
 	void render();
-	void reset();
-
 	void saveToFile();
 	void loadFromFile();
+
+	void setupEventListeners();
+
+	void handleEvents();
+	void onWindowClosed(const sf::Event::Closed& event);
+	void onKeyPressed(const sf::Event::KeyPressed& event);
+	void onWindowResized(const sf::Event::Resized& event);
+	void onMouseButtonPressed(const sf::Event::MouseButtonPressed& event);
+	void onMouseButtonReleased(const sf::Event::MouseButtonReleased& event);
+	void onMouseMoved(const sf::Event::MouseMoved& event);
+	void onSimulationStart(const StartSimulationEvent& event);
+	void onSimulationStop(const StopSimulationEvent& event);
 public:
 	Game();
 	~Game();

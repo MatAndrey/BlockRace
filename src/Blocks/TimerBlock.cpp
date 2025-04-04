@@ -204,11 +204,6 @@ double TimerBlock::getDuration()
     return timeToWork.asSeconds();
 }
 
-TextField* TimerBlock::onClick(sf::Vector2f mousePos)
-{
-    return field.onClick(mousePos);
-}
-
 void TimerBlock::updateDuration()
 {
     try {

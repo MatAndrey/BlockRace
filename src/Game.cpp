@@ -34,8 +34,8 @@ Game::Game() :
 		y += block->size.y + 10;
 	}
 
-	reset();
 	loadFromFile();
+	setupEventListeners();
 }
 
 Game::~Game()
@@ -59,139 +59,153 @@ void Game::loop()
    }  
 }
 
+void Game::setupEventListeners() {
+	EventBus::get().subscribe<sf::Event::Closed>(this, &Game::onWindowClosed);
+	EventBus::get().subscribe<sf::Event::KeyPressed>(this, &Game::onKeyPressed);
+	EventBus::get().subscribe<sf::Event::Resized>(this, &Game::onWindowResized);
+	EventBus::get().subscribe<sf::Event::MouseButtonPressed>(this, &Game::onMouseButtonPressed);
+	EventBus::get().subscribe<sf::Event::MouseButtonReleased>(this, &Game::onMouseButtonReleased);
+	EventBus::get().subscribe<sf::Event::MouseMoved>(this, &Game::onMouseMoved);
+	EventBus::get().subscribe<StartSimulationEvent>(this, &Game::onSimulationStart);
+	EventBus::get().subscribe<StopSimulationEvent>(this, &Game::onSimulationStop);
+}
+
 void Game::handleEvents() {
-	while (const std::optional event = window.pollEvent())
-	{
-		if (event->is<sf::Event::Closed>())
-			window.close();
-		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-		{
-			if (keyPressed->scancode == sf::Keyboard::Scan::Escape)
-			{
-				window.close();
+	while (const std::optional event = window.pollEvent()) {
+		event->visit([](auto&& e) {
+			EventBus::get().publish(std::forward<decltype(e)>(e));
+			});
+	}
+}
+
+void Game::onWindowClosed(const sf::Event::Closed&) {
+	window.close();
+}
+
+void Game::onKeyPressed(const sf::Event::KeyPressed& keyPressed) {
+	if (keyPressed.scancode == sf::Keyboard::Scan::Escape) {
+		window.close();
+	}
+}
+
+void Game::onWindowResized(const sf::Event::Resized&) {
+	blocksView.setSize({ 0.25f * window.getSize().x, 0.9f * window.getSize().y });
+	blocksView.setCenter({ 0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
+
+	raceView.setSize({ 0.75f * window.getSize().x, 0.9f * window.getSize().y });
+	raceView.setCenter({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
+}
+
+void Game::onMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseButtonPressed) {
+	if (mouseButtonPressed.button == sf::Mouse::Button::Left) {
+		sf::FloatRect blocksViewRect(blocksView.getCenter() - blocksView.getSize() / 2.f, blocksView.getSize());
+		if (blocksViewRect.contains(sf::Vector2f(mouseButtonPressed.position))) {
+			sf::Vector2f worldPos = window.mapPixelToCoords(mouseButtonPressed.position, blocksView);
+			EventBus::get().publish(BlockPressedEvent{
+					worldPos,
+					sf::Mouse::Button::Left,
+					isRunning
+				});
+
+		}
+		sf::Vector2f worldPos = window.mapPixelToCoords(mouseButtonPressed.position, blocksView);
+		bool textFieldActivated = false;
+
+		for (auto& block : blocks) {
+			if (block->isInBoundingBox(worldPos) && !isRunning) {
+				startPos = worldPos;
+				movingBlock = block;
 			}
 		}
-		if (event->is<sf::Event::Resized>()) {
-			blocksView.setSize({ 0.25f * window.getSize().x, 0.9f * window.getSize().y });
-			blocksView.setCenter({ 0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 
-			raceView.setSize({ 0.75f * window.getSize().x, 0.9f * window.getSize().y });
-			raceView.setCenter({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
-		}
-		
-		if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
-		{
-			if (mouseButtonPressed->button == sf::Mouse::Button::Left)
-			{
-				sf::Vector2f worldPos = window.mapPixelToCoords(mouseButtonPressed->position, blocksView);
-				bool textFieldActivated = false;
-				for (auto &block : blocks) {
-					if (block->name() == "StartBlock") {
-						StartBlock* sb = dynamic_cast<StartBlock*> (block);
-						if (sb->isMouseOver(worldPos) && (sb == activeStartBlock || !isRunning)) {
-							bool chainState = sb->click(worldPos);
-							if (chainState) {
-								nextBlockToUpdate = sb->getNext();
-								activeStartBlock = sb;
-								isRunning = true;
-								elapsed = sf::seconds(0);
-							}
-							else {
-								reset();
-							}
-							break;
-						}
-					}
-					else if (block->name() == "TimerBlock") {
-						TimerBlock* tb = dynamic_cast<TimerBlock*> (block);
-						TextField* tf = tb->onClick(worldPos);
-						if (tf != nullptr) {
-							if (activeTextField) {
-								activeTextField->disable();
-							}
-							activeTextField = tf;
-							textFieldActivated = true;
-							break;
-						}
-					}
-					if (block->isInBoundingBox(worldPos) && !isRunning) {
-						startPos = worldPos;
-						movingBlock = block;
-					}
-				}
-				if (!textFieldActivated) {
-					activeTextField = nullptr;
-				}
-				if (!isRunning) {
-					for (auto block : blockStore) {
-						if (block->isInBoundingBox(worldPos)) {
-							startPos = worldPos;
-							movingBlock = block->clone();
-							blocks.push_back(movingBlock);
-						}
-					}
-				}				
-			}
-		}
-		if (const auto* mouseButtonReleased = event->getIf<sf::Event::MouseButtonReleased>())
-		{
-			if (mouseButtonReleased->button == sf::Mouse::Button::Left && !isRunning)
-			{
-				for (auto iter = blocks.begin(); iter != blocks.end();) {
-					Block* block = *iter;
-
-					if (block->pos.x + block->size.x < blockStoreWidth) {
-						iter = blocks.erase(iter);
-						delete block;
-						continue;						
-					}
-					else {
-						iter++;
-					}
-					if (block->blockInteract(movingBlock)) {
-						break;
-					}
-				}
-
-				movingBlock = nullptr;
-
-			}
-		}
-		if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())
-		{
-			if (!nextBlockToUpdate) {
-				for (Block* block : blocks) {
-					if (block->name() == "StartBlock") {
-						StartBlock* sb = dynamic_cast<StartBlock*> (block);
-						if (sb->isMouseOver(window.mapPixelToCoords(mouseMoved->position, blocksView))) {
-							const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Hand).value();
-							window.setMouseCursor(cursor);
-						}
-						else {
-							const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Arrow).value();
-							window.setMouseCursor(cursor);
-						}
-						break;
-					}
-				}
-				if (movingBlock != nullptr) {
-					sf::FloatRect viewBounds({
-						blocksView.getCenter().x - blocksView.getSize().x / 2,
-						blocksView.getCenter().y - blocksView.getSize().y / 2 },
-						{ blocksView.getSize().x, blocksView.getSize().y });
-
-					sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved->position, blocksView);
-					if (viewBounds.contains(worldPos)) {
-						movingBlock->moveBy(worldPos - startPos);
-						startPos = worldPos;
-					}
+		if (!isRunning) {
+			for (auto block : blockStore) {
+				if (block->isInBoundingBox(worldPos)) {
+					startPos = worldPos;
+					movingBlock = block->clone();
+					blocks.push_back(movingBlock);
 				}
 			}
 		}
-		if (const auto* textEntred = event->getIf<sf::Event::TextEntered>()) {
-			if (activeTextField) {
-				activeTextField->onTextInput(textEntred);
-			}			
+	}
+}
+
+void Game::onMouseButtonReleased(const sf::Event::MouseButtonReleased& mouseButtonReleased) {
+	if (mouseButtonReleased.button == sf::Mouse::Button::Left && !isRunning) {
+		for (auto iter = blocks.begin(); iter != blocks.end();) {
+			Block* block = *iter;
+
+			if (block->pos.x + block->size.x < blockStoreWidth) {
+				iter = blocks.erase(iter);
+				delete block;
+				continue;
+			}
+			else {
+				iter++;
+			}
+			if (block->blockInteract(movingBlock)) {
+				break;
+			}
+		}
+
+		movingBlock = nullptr;
+	}
+}
+
+void Game::onMouseMoved(const sf::Event::MouseMoved& mouseMoved) {
+	if (!nextBlockToUpdate) {
+		bool isOver = false;
+		for (Block* block : blocks) {
+			if (block->name() == "StartBlock") {
+				StartBlock* sb = dynamic_cast<StartBlock*>(block);
+				if (sb->isMouseOver(window.mapPixelToCoords(mouseMoved.position, blocksView))) {
+					isOver = true;
+					break;
+				}
+			}
+		}
+		if (isOver) {
+			const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Hand).value();
+			window.setMouseCursor(cursor);
+		}
+		else {
+			const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Arrow).value();
+			window.setMouseCursor(cursor);
+		}
+
+		if (movingBlock != nullptr) {
+			sf::FloatRect viewBounds({
+				blocksView.getCenter().x - blocksView.getSize().x / 2,
+				blocksView.getCenter().y - blocksView.getSize().y / 2 },
+				{ blocksView.getSize().x, blocksView.getSize().y });
+
+			sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved.position, blocksView);
+			if (viewBounds.contains(worldPos)) {
+				movingBlock->moveBy(worldPos - startPos);
+				startPos = worldPos;
+			}
+		}
+	}
+}
+
+void Game::onSimulationStart(const StartSimulationEvent& event)
+{
+	if (!isRunning) {
+		isRunning = true;
+		nextBlockToUpdate = event.startBlock->getNext();
+		elapsed = sf::seconds(0);
+	}
+}
+
+void Game::onSimulationStop(const StopSimulationEvent& event)
+{
+	if (isRunning) {
+		level.carReset();
+		EventBus::get().publish<DisableBlocksEvent>(DisableBlocksEvent{});
+		nextBlockToUpdate = nullptr;
+		isRunning = false;
+		for (const auto& block : blocks) {
+			block->deactivate(car);
 		}
 	}
 }
@@ -225,19 +239,6 @@ void Game::render()
 
     window.display();
     
-}
-
-void Game::reset()
-{
-	level.carReset();
-	if(activeStartBlock)
-		activeStartBlock->disable();
-	nextBlockToUpdate = nullptr;
-	activeStartBlock = nullptr;
-	isRunning = false;
-	for (const auto& block : blocks) {
-		block->deactivate(car);
-	}
 }
 
 void Game::saveToFile()
@@ -315,7 +316,5 @@ void Game::update()
 	}
 
 	car.update(dt);
-	level.update([this]() {
-		reset();
-	});
+	level.update();
 }

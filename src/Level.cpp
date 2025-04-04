@@ -113,10 +113,10 @@ void Level::render(sf::View& view)
     view.setCenter(car->pos);
 }
 
-void Level::update(std::function<void()> resetFunction)
+void Level::update()
 {
     if (checkCollision()) {
-        resetFunction();
+        EventBus::get().publish<StopSimulationEvent>(StopSimulationEvent{});
     }
 }
 

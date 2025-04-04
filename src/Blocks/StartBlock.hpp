@@ -3,6 +3,7 @@
 #include "Block.hpp"
 #include <vector>
 #include "../UI/StartButton.hpp"
+#include "../EventBus.hpp"
 
 class StartBlock : public Block {
 	sf::RectangleShape shape1;
@@ -16,6 +17,6 @@ public:
 	virtual void render();
 	virtual Block* update(Car& car);
 	virtual std::string name();
-	bool click(sf::Vector2f pos);
-	void disable();
+	void handlePress(const BlockPressedEvent& event);
+	void handleDisable(const DisableBlocksEvent& event);
 };

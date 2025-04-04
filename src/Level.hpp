@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include "Car.hpp"
+#include "EventBus.hpp"
 
 using json = nlohmann::json;
 
@@ -22,6 +23,6 @@ public:
     Level(const std::string& path, sf::RenderWindow* window, Car* car);
 
     void Level::render(sf::View& view);
-    void update(std::function<void()> resetFunction);
+    void update();
     void carReset();
 };

@@ -13,14 +13,14 @@ void StartButton::render() {
 	window->draw(outline, transform);
 }
 
-bool StartButton::click(sf::Vector2f pos)
+bool StartButton::getState()
 {
-	return state = !state;
+	return state;
 }
 
-void StartButton::disable()
+void StartButton::setState(bool newState)
 {
-	state = false;
+	state = newState;
 }
 
 StartButton::StartButton(sf::Vector2f _pos, sf::RenderWindow* window) : Entity(_pos, window), state(false),
