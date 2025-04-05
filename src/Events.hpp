@@ -20,5 +20,3 @@ struct StartSimulationEvent {
 struct StopSimulationEvent {};
 
 struct DisableBlocksEvent {};
-
-struct CarAccidentEvent {};

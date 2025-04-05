@@ -8,6 +8,8 @@ PopupWindow::PopupWindow(sf::RenderWindow& parentWindow)
     windowRect.setFillColor(sf::Color(70, 70, 70));
     windowRect.setOutlineColor(sf::Color::White);
     windowRect.setOutlineThickness(2);
+
+    EventBus::get().subscribe<sf::Event::MouseButtonPressed>(this, &PopupWindow::handleMousePressed);
 }
 
 void PopupWindow::show(const std::wstring& title, const std::wstring& message,
@@ -17,8 +19,8 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
     sf::Vector2f parentSize = static_cast<sf::Vector2f>(parentWindow.getSize());
     background.setSize(parentSize);
 
-    windowRect.setSize({ parentSize.x * 0.4f, parentSize.y * 0.3f });
-    windowRect.setPosition({ parentSize.x * 0.3f, parentSize.y * 0.35f });
+    windowRect.setSize({ parentSize.x * 0.5f, parentSize.y * 0.4f });
+    windowRect.setPosition({ parentSize.x * 0.25f, parentSize.y * 0.3f });
 
     setupText(titleText, title, font, 24, sf::Color::White);
     setupText(messageText, message, font, 18, sf::Color::White);
@@ -26,21 +28,30 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
     titleText.setPosition(windowRect.getPosition() + sf::Vector2f{ 20, 20 });
     messageText.setPosition(windowRect.getPosition() + sf::Vector2f{ 20, 70 });
 
+    optionRects.clear();
+    optionTexts.clear();
+
     float buttonWidth = 150.f;
     float buttonHeight = 40.f;
     float startX = windowRect.getPosition().x +
         (windowRect.getSize().x - (buttonWidth + 10) * options.size() + 10) / 2;
 
     for (size_t i = 0; i < options.size(); ++i) {
-        Button button(
-            sf::Vector2f{ startX + i * (buttonWidth + 10),
-            windowRect.getPosition().y + windowRect.getSize().y - 60 },
-            &parentWindow,
-            options[i],
-            nullptr,
-            sf::Vector2f{ buttonWidth, buttonHeight });
-        
-        buttons.push_back(button);
+        sf::RectangleShape button({ buttonWidth, buttonHeight });
+        button.setPosition({ startX + i * (buttonWidth + 10),
+            windowRect.getPosition().y + windowRect.getSize().y - 60 });
+        button.setFillColor(sf::Color(100, 100, 100));
+        button.setOutlineColor(sf::Color::White);
+        button.setOutlineThickness(1);
+
+        sf::Text text(font);
+        setupText(text, options[i], font, 18, sf::Color::White);
+        text.setPosition(button.getPosition() +
+            sf::Vector2f{ (buttonWidth - text.getLocalBounds().size.x) / 2,
+                        (buttonHeight - text.getLocalBounds().size.y) / 2 - 5 });
+
+        optionRects.push_back(button);
+        optionTexts.push_back(text);
     }
 
     visible = true;
@@ -58,42 +69,26 @@ void PopupWindow::render() {
     parentWindow.draw(titleText);
     parentWindow.draw(messageText);
 
-    for (auto& button : buttons) {
-        button.render();
+    for (size_t i = 0; i < optionRects.size(); ++i) {
+        parentWindow.draw(optionRects[i]);
+        parentWindow.draw(optionTexts[i]);
     }
 }
 
-void PopupWindow::handleEvent(const sf::Event& event) {
-    if (!visible) return;
+void PopupWindow::handleMousePressed(const sf::Event::MouseButtonPressed& event)
+{
+    if (event.button == sf::Mouse::Button::Left && visible) {
+        sf::Vector2f mousePos = parentWindow.mapPixelToCoords(
+            { event.position.x, event.position.y });
 
-    if (const auto& mousePressed = event.getIf<sf::Event::MouseButtonPressed>()) {
-        sf::Vector2f mousePos = parentWindow.mapPixelToCoords(
-            { mousePressed->position.x, mousePressed->position.y });
-        if (mousePressed->button == sf::Mouse::Button::Left) {
-            for (int i = 0; i < buttons.size(); i++) {
-                if (buttons[i].isInBoundingBox(mousePos) && currentCallback) {
-                    currentCallback(i);
+        for (size_t i = 0; i < optionRects.size(); ++i) {
+            if (optionRects[i].getGlobalBounds().contains(mousePos)) {
+                if (currentCallback) {
+                    currentCallback(static_cast<int>(i));
                 }
-            }
-        }
-    }
-    if (const auto& mouseMoved = event.getIf<sf::Event::MouseMoved>()) {
-        bool isOver = false;
-        sf::Vector2f mousePos = parentWindow.mapPixelToCoords(
-            { mouseMoved->position.x, mouseMoved->position.y });
-        for (int i = 0; i < buttons.size(); i++) {
-            if (buttons[i].isInBoundingBox(mousePos)) {
-                isOver = true;
+                hide();
                 break;
             }
-        }
-        if (isOver) {
-            const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Hand).value();
-            parentWindow.setMouseCursor(cursor);
-        }
-        else {
-            const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Arrow).value();
-            parentWindow.setMouseCursor(cursor);
         }
     }
 }

@@ -2,7 +2,6 @@
 #include <SFML/Graphics.hpp>
 #include <functional>
 #include "../EventBus.hpp"
-#include "Button.hpp"
 
 class PopupWindow {
 public:
@@ -18,7 +17,7 @@ public:
     );
     void hide();
     void render();
-    void handleEvent(const sf::Event& event);
+    void handleMousePressed(const sf::Event::MouseButtonPressed& event);
 
     bool isVisible() const;
 
@@ -29,7 +28,8 @@ private:
     sf::Font font;
     sf::Text titleText;
     sf::Text messageText;
-    std::vector<Button> buttons;
+    std::vector<sf::RectangleShape> optionRects;
+    std::vector<sf::Text> optionTexts;
     Callback currentCallback;
 
     bool visible = false;

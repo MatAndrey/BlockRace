@@ -1,27 +1,28 @@
 ﻿#include "Game.hpp"
 #include <iostream>
+#include <sstream>
 
 Game::Game() :
+	initHeight(1080),
+	initWidth(1920),
+	blockStoreWidth(150),
 	car({ 10, 10 }, & window),
 	level(".\\assets\\maps\\level1.json", &window, &car),
 	popup(window)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
-	
-	sf::WindowHandle hwnd = window.getNativeHandle();
-	ShowWindow(hwnd, SW_SHOWMAXIMIZED);
 
 	appView.setViewport(sf::FloatRect({ 0, 0 }, { 1, 1 }));
 	appView.setSize({ window.getSize().x * 1.0f, window.getSize().y * 1.0f });
 	appView.setCenter({ window.getSize().x / 2.0f, window.getSize().y / 2.0f });
 
-	raceView.setViewport(sf::FloatRect({ 0.25f, 0.05f }, { 0.75f, 0.95f }));
-	raceView.setSize({ 0.75f * window.getSize().x, 0.95f * window.getSize().y });
-	raceView.setCenter({ 0.75f * window.getSize().x / 2, 0.95f * window.getSize().y / 2 });
+	raceView.setViewport(sf::FloatRect({ 0.25f, 0.05f }, { 0.75f, 0.9f }));
+	raceView.setSize({ 0.75f * window.getSize().x, 0.9f * window.getSize().y });
+	raceView.setCenter({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 
-	blocksView.setViewport(sf::FloatRect({ 0, 0.05f }, { 0.25f, 0.95f }));
-	blocksView.setSize({0.25f * window.getSize().x, 0.95f * window.getSize().y });
-	blocksView.setCenter({0.25f * window.getSize().x / 2, 0.95f * window.getSize().y / 2 });
+	blocksView.setViewport(sf::FloatRect({ 0, 0.05f }, { 0.25f, 0.9f }));
+	blocksView.setSize({0.25f * window.getSize().x, 0.9f * window.getSize().y });
+	blocksView.setCenter({0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 
 	blockStore.push_back(new StartBlock(sf::Vector2f(0, 0), &window));
 	blockStore.push_back(new TimerBlock(sf::Vector2f(0, 0), &window));
@@ -69,42 +70,34 @@ void Game::setupEventListeners() {
 	EventBus::get().subscribe<sf::Event::MouseMoved>(this, &Game::onMouseMoved);
 	EventBus::get().subscribe<StartSimulationEvent>(this, &Game::onSimulationStart);
 	EventBus::get().subscribe<StopSimulationEvent>(this, &Game::onSimulationStop);
-	EventBus::get().subscribe<sf::Event::Closed>(this, &Game::onWindowClosed);
-	EventBus::get().subscribe<CarAccidentEvent>(this, &Game::onCarAccident);
 }
 
 void Game::handleEvents() {
 	while (const std::optional event = window.pollEvent()) {
-		if (popup.isVisible()) {
-			popup.handleEvent(*event);
-		}
-		else {
-			event->visit([](auto&& e) {
-				EventBus::get().publish(std::forward<decltype(e)>(e));
-			});
-		}
-		
+		event->visit([](auto&& e) {
+			EventBus::get().publish(std::forward<decltype(e)>(e));
+		});
 	}
 }
 
 void Game::onKeyPressed(const sf::Event::KeyPressed& keyPressed) {
 	if (keyPressed.scancode == sf::Keyboard::Scan::Escape) {
 		window.close();
-/*		popup.show(L"Подтверждение выхода", L"Сохранить изменения?",
-			{ L"Сохранить", L"Не сохранять", L"Отмена" },
-			[this](int option) {
-				switch (option) {
-				case 0:
-					saveToFile();
-					window.close();
-					break;
-				case 1:
-					window.close();
-					break;
-				case 2:
-					break;
-				}
-			})*/;
+		//popup.show(L"Подтверждение выхода", L"Сохранить изменения?",
+		//	{ L"Сохранить", L"Не сохранять", L"Отмена" },
+		//	[this](int option) {
+		//		switch (option) {
+		//		case 0:
+		//			saveToFile();
+		//			window.close();
+		//			break;
+		//		case 1:
+		//			window.close();
+		//			break;
+		//		case 2:
+		//			break;
+		//		}
+		//	});
 	}
 }
 
@@ -112,11 +105,11 @@ void Game::onWindowResized(const sf::Event::Resized&) {
 	appView.setSize({ window.getSize().x * 1.0f, window.getSize().y * 1.0f });
 	appView.setCenter({ window.getSize().x / 2.0f, window.getSize().y / 2.0f });
 
-	blocksView.setSize({ 0.25f * window.getSize().x, 0.95f * window.getSize().y });
-	blocksView.setCenter({ 0.25f * window.getSize().x / 2, 0.95f * window.getSize().y / 2 });
+	blocksView.setSize({ 0.25f * window.getSize().x, 0.9f * window.getSize().y });
+	blocksView.setCenter({ 0.25f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 
-	raceView.setSize({ 0.75f * window.getSize().x, 0.95f * window.getSize().y });
-	raceView.setCenter({ 0.75f * window.getSize().x / 2, 0.95f * window.getSize().y / 2 });
+	raceView.setSize({ 0.75f * window.getSize().x, 0.9f * window.getSize().y });
+	raceView.setCenter({ 0.75f * window.getSize().x / 2, 0.9f * window.getSize().y / 2 });
 }
 
 void Game::onMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseButtonPressed) {
@@ -181,27 +174,27 @@ void Game::onMouseButtonReleased(const sf::Event::MouseButtonReleased& mouseButt
 }
 
 void Game::onMouseMoved(const sf::Event::MouseMoved& mouseMoved) {
-	sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved.position, blocksView);
-	bool isOver = false;	
-	for (Block* block : blocks) {
-		if (block->name() == "StartBlock") {
-			StartBlock* sb = dynamic_cast<StartBlock*>(block);
-			if (sb->isMouseOver(worldPos)) {
-				isOver = true;
-				break;
+	if (!nextBlockToUpdate) {
+		bool isOver = false;
+		sf::Vector2f worldPos = window.mapPixelToCoords(mouseMoved.position, blocksView);
+		for (Block* block : blocks) {
+			if (block->name() == "StartBlock") {
+				StartBlock* sb = dynamic_cast<StartBlock*>(block);
+				if (sb->isMouseOver(worldPos)) {
+					isOver = true;
+					break;
+				}
 			}
 		}
-	}
-	if (isOver) {
-		const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Hand).value();
-		window.setMouseCursor(cursor);
-	}
-	else {
-		const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Arrow).value();
-		window.setMouseCursor(cursor);
-	}
+		if (isOver) {
+			const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Hand).value();
+			window.setMouseCursor(cursor);
+		}
+		else {
+			const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Arrow).value();
+			window.setMouseCursor(cursor);
+		}
 
-	if (!isRunning) {
 		if (movingBlock != nullptr) {
 			sf::FloatRect viewBounds({
 				blocksView.getCenter().x - blocksView.getSize().x / 2,
@@ -245,21 +238,10 @@ void Game::onSimulationStop(const StopSimulationEvent& event)
 		for (const auto& block : blocks) {
 			block->deactivate(car);
 		}
-		
+		popup.show(L"Авария", L"Машинка выкатилась за пределы дороги",
+			{ L"Заново"},
+			[this](int option) {});
 	}
-}
-
-void Game::onCarAccident(const CarAccidentEvent& event)
-{
-	EventBus::get().publish<StopSimulationEvent>(StopSimulationEvent{});
-	popup.show(L"Авария", L"Машинка выкатилась за пределы дороги",
-		{ L"Заново" },
-		[this](int option) {});
-}
-
-void Game::onWindowClosed(const sf::Event::Closed& event)
-{
-	window.close();
 }
 
 void Game::render()
@@ -270,7 +252,7 @@ void Game::render()
 	level.render(raceView);
 
 	window.setView(blocksView);
-	// TODO
+
 	sf::RectangleShape blocksBackground;
 	blocksBackground.setFillColor(sf::Color(200, 200, 200));
 	blocksBackground.setSize({ 1920, 1080 });
@@ -280,10 +262,10 @@ void Game::render()
 	storeBackground.setSize({ (float)blockStoreWidth, 1080 });
 	window.draw(storeBackground);
 
-	for (const auto& block : blockStore) {
+	for (const auto& block : blocks) {
 		block->render();
 	}
-	for (const auto& block : blocks) {
+	for (const auto& block : blockStore) {
 		block->render();
 	}
 
