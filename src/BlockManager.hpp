@@ -30,8 +30,8 @@ public:
 	BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksView);
 	void update(sf::Time deltaTime);
 	void render();
-	void saveToFile();
-	void loadFromFile();
+	void saveToFile(std::wstring fileName);
+	void loadFromFile(std::wstring fileName);
 	void reset();
 
 	void onSimulationStart(const StartSimulationEvent& event);

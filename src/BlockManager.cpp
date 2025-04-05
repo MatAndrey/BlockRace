@@ -8,8 +8,8 @@ BlockManager::BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksV
 	storeBackground.setFillColor(sf::Color(150, 150, 150));
 	storeBackground.setSize({ blockStoreWidth, 1080 });
 
-	blockStore.push_back(new StartBlock(sf::Vector2f(0, 0), window));
-	blockStore.push_back(new TimerBlock(sf::Vector2f(0, 0), window));
+	blockStore.push_back(new StartBlock(sf::Vector2f(0, 0), window, blocksView));
+	blockStore.push_back(new TimerBlock(sf::Vector2f(0, 0), window, blocksView));
 	blockStore.push_back(new AccelerationBlock(sf::Vector2f(0, 0), window));
 	blockStore.push_back(new DecelerationBlock(sf::Vector2f(0, 0), window));
 	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(5)));
@@ -20,8 +20,6 @@ BlockManager::BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksV
 		block->moveTo({ 10, y });
 		y += block->size.y + 10;
 	}
-
-	loadFromFile();
 
 	EventBus::get().subscribe<StartSimulationEvent>(this, &BlockManager::onSimulationStart);
 	EventBus::get().subscribe<sf::Event::MouseButtonPressed>(this, &BlockManager::onMouseButtonPressed);
@@ -54,9 +52,9 @@ void BlockManager::render()
 	}
 }
 
-void BlockManager::saveToFile()
+void BlockManager::saveToFile(std::wstring fileName)
 {
-	std::ofstream file("save.dat");
+	std::ofstream file(fileName);
 	for (const auto& block : blocks) {
 		if (block->name() == "RotationBlock") {
 			RotationBlock* rb = dynamic_cast<RotationBlock*>(block);
@@ -73,19 +71,20 @@ void BlockManager::saveToFile()
 	file.close();
 }
 
-void BlockManager::loadFromFile()
+void BlockManager::loadFromFile(std::wstring fileName)
 {
-	std::ifstream file("save.dat");
+	std::ifstream file(fileName);
 	if (!file) {
 		return;
 	}
+	blocks.clear();
 	while (!file.eof()) {
 		std::string type;
 		sf::Vector2f pos;
 		file >> type >> pos.x >> pos.y;
 		Block* block = nullptr;
 		if (type == "StartBlock") {
-			block = new StartBlock(pos, window);
+			block = new StartBlock(pos, window, blocksView);
 		}
 		else if (type == "AccelerationBlock") {
 			block = new AccelerationBlock(pos, window);
@@ -98,7 +97,7 @@ void BlockManager::loadFromFile()
 			float height;
 			file >> height >> duration;
 
-			block = new TimerBlock(pos, window, height, duration);
+			block = new TimerBlock(pos, window, blocksView, height, duration);
 		}
 		else if (type == "RotationBlock") {
 			float angle;
@@ -126,7 +125,8 @@ void BlockManager::reset()
 		for (const auto& block : blocks) {
 			block->deactivate(*car);
 		}
-	}	
+	}
+	leftHold = false;
 }
 
 void BlockManager::onSimulationStart(const StartSimulationEvent& event)
@@ -140,7 +140,10 @@ void BlockManager::onSimulationStart(const StartSimulationEvent& event)
 
 void BlockManager::onMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseButtonPressed) {
 	if (mouseButtonPressed.button == sf::Mouse::Button::Left) {
-		sf::FloatRect blocksViewRect(window->getView().getCenter() - window->getView().getSize() / 2.f, window->getView().getSize());
+		sf::FloatRect blocksViewRect({
+			(*blocksView).getCenter().x - (*blocksView).getSize().x / 2,
+			(*blocksView).getCenter().y - (*blocksView).getSize().y / 2 },
+			{ (*blocksView).getSize().x, (*blocksView).getSize().y });
 		sf::Vector2f worldPos = window->mapPixelToCoords(mouseButtonPressed.position, *blocksView);
 
 		if (blocksViewRect.contains(sf::Vector2f(mouseButtonPressed.position))) {
@@ -199,46 +202,26 @@ void BlockManager::onMouseButtonReleased(const sf::Event::MouseButtonReleased& m
 
 void BlockManager::onMouseMoved(const sf::Event::MouseMoved& mouseMoved) {
 	sf::Vector2f worldPos = window->mapPixelToCoords(mouseMoved.position, *blocksView);
-	bool isOver = false;
-	for (Block* block : blocks) {
-		if (block->name() == "StartBlock") {
-			StartBlock* sb = dynamic_cast<StartBlock*>(block);
-			if (sb->isMouseOver(worldPos)) {
-				isOver = true;
-				break;
-			}
-		}
-	}
-	if (isOver) {
-		const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Hand).value();
-		window->setMouseCursor(cursor);
-	}
-	else {
-		const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Arrow).value();
-		window->setMouseCursor(cursor);
-	}
-
 	if (!isRunning) {
-		if (movingBlock != nullptr) {
-			sf::FloatRect viewBounds({
-				(*blocksView).getCenter().x - (*blocksView).getSize().x / 2,
-				(*blocksView).getCenter().y - (*blocksView).getSize().y / 2 },
-				{ (*blocksView).getSize().x, (*blocksView).getSize().y });
+		sf::FloatRect viewBounds({
+			(*blocksView).getCenter().x - (*blocksView).getSize().x / 2,
+			(*blocksView).getCenter().y - (*blocksView).getSize().y / 2 },
+			{ (*blocksView).getSize().x, (*blocksView).getSize().y });
 
-
-			if (viewBounds.contains(worldPos)) {
+		if (viewBounds.contains(worldPos)) {
+			if (movingBlock != nullptr) {
 				movingBlock->moveBy(worldPos - startPos);
 				startPos = worldPos;
 			}
-		}
-		else if (leftHold) {
-			for (Block* block : blocks) {
-				block->pos += worldPos - startPos;
-				if (block->pos.x < blockStoreWidth) {
-					block->pos.x = blockStoreWidth;
+			else if (leftHold) {
+				for (Block* block : blocks) {
+					block->pos += worldPos - startPos;
+					if (block->pos.x < blockStoreWidth) {
+						block->pos.x = blockStoreWidth;
+					}
 				}
+				startPos = worldPos;
 			}
-			startPos = worldPos;
-		}
+		}		
 	}
 }

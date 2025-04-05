@@ -32,7 +32,7 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
         (windowRect.getSize().x - (buttonWidth + 10) * options.size() + 10) / 2;
 
     for (size_t i = 0; i < options.size(); ++i) {
-        Button button(
+        Button* button = new Button(
             sf::Vector2f{ startX + i * (buttonWidth + 10),
             windowRect.getPosition().y + windowRect.getSize().y - 60 },
             &parentWindow,
@@ -48,6 +48,9 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
 
 void PopupWindow::hide() {
     visible = false;
+    for (Button* button : buttons) {
+        delete button;
+    }
     buttons.clear();
 }
 
@@ -60,7 +63,7 @@ void PopupWindow::render() {
     parentWindow.draw(messageText);
 
     for (auto& button : buttons) {
-        button.render();
+        button->render();
     }
 }
 
@@ -72,7 +75,7 @@ void PopupWindow::handleEvent(const sf::Event& event) {
             { mousePressed->position.x, mousePressed->position.y });
         if (mousePressed->button == sf::Mouse::Button::Left) {
             for (int i = 0; i < buttons.size(); i++) {
-                if (buttons[i].isInBoundingBox(mousePos) && currentCallback) {
+                if (buttons[i]->contains(mousePos) && currentCallback) {
                     hide();
                     currentCallback(i);
                 }
@@ -80,23 +83,10 @@ void PopupWindow::handleEvent(const sf::Event& event) {
         }
     }
     if (const auto& mouseMoved = event.getIf<sf::Event::MouseMoved>()) {
-        bool isOver = false;
-        sf::Vector2f mousePos = parentWindow.mapPixelToCoords(
-            { mouseMoved->position.x, mouseMoved->position.y });
-        for (int i = 0; i < buttons.size(); i++) {
-            if (buttons[i].isInBoundingBox(mousePos)) {
-                isOver = true;
-                break;
-            }
+        for (auto& elem : UIElement::getAllElements()) {
+            elem->updateHoverState(mouseMoved->position);
         }
-        if (isOver) {
-            const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Hand).value();
-            parentWindow.setMouseCursor(cursor);
-        }
-        else {
-            const auto cursor = sf::Cursor::createFromSystem(sf::Cursor::Type::Arrow).value();
-            parentWindow.setMouseCursor(cursor);
-        }
+        UIElement::updateCursor(parentWindow);
     }
 }
 

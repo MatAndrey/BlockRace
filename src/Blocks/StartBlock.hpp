@@ -9,9 +9,9 @@ class StartBlock : public Block {
 	sf::RectangleShape shape1;
 	sf::RectangleShape shape2;
 	StartButton button;
+	sf::View* view = nullptr;
 public:
-	StartBlock(sf::Vector2f _pos, sf::RenderWindow* window);
-	bool isMouseOver(sf::Vector2f pos);
+	StartBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::View* view);
 	virtual ~StartBlock();
 	virtual StartBlock* clone();
 	virtual void render();

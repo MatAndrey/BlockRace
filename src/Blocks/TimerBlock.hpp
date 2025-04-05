@@ -8,6 +8,7 @@ protected:
 	Block* innerNextBlock;
 	sf::Clock clock;
 	sf::Time elapsedTime;
+	sf::View* view;
 
 	sf::RectangleShape shape1;
 	sf::RectangleShape shape2;
@@ -22,7 +23,7 @@ protected:
 	void resize();
 	float getInnerHeight();
 public:
-	TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, float height = 90, double durationMcs = 1);
+	TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::View* view, float height = 90, double durationSecs = 1);
 	~TimerBlock();
 	virtual void moveBy(sf::Vector2f);
 	virtual bool blockInteract(Block*, bool disconeting = true);

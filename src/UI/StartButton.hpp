@@ -1,8 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "../Entity.hpp"
+#include "UIElement.hpp"
 
-class StartButton : public Entity {
+class StartButton : public UIElement {
 	bool state;
 	sf::CircleShape triangle;
 	sf::RectangleShape rectangle;
@@ -10,7 +10,7 @@ class StartButton : public Entity {
 public:
 	StartButton(sf::Vector2f _pos, sf::RenderWindow* window);
 	~StartButton();
-	bool isMouseOver(sf::Vector2f pos);
+	virtual bool contains(const sf::Vector2f& point) const;
 	virtual void render();
 	bool getState();
 	void setState(bool newState);

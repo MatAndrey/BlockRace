@@ -2,7 +2,7 @@
 #include <iostream>
 
 TextField::TextField(sf::Vector2f _pos, sf::RenderWindow* window, sf::Vector2f size)
-    : Entity(_pos, window), size(size), font(".\\assets\\fonts\\Share-Tech-CYR.otf"), text(font)
+    : UIElement(_pos, window), size(size), font(".\\assets\\fonts\\Share-Tech-CYR.otf"), text(font)
 {
     background.setSize(size);
     background.setFillColor(sf::Color::White);
@@ -25,7 +25,7 @@ void TextField::render()
 {
     sf::Transform transform;
     transform.translate(pos);
-    
+
     window->draw(background, transform);
     window->draw(text, transform);
 
@@ -69,8 +69,7 @@ void TextField::enable()
 
 void TextField::handlePress(const BlockPressedEvent& event)
 {
-    sf::FloatRect rect(pos, size);
-    if (rect.contains(event.worldPos)) {
+    if (contains(event.worldPos)) {
         enable();
     }
     else {
@@ -86,6 +85,7 @@ void TextField::handleTextEntered(const sf::Event::TextEntered& event)
 
 void TextField::addCharacter(char32_t c)
 {
+
     if (c == '\b' && !inputString.empty()) {
         inputString.pop_back();
     }
@@ -97,4 +97,10 @@ void TextField::addCharacter(char32_t c)
         inputString.pop_back();
         text.setString(inputString);
     }
+}
+
+bool TextField::contains(const sf::Vector2f& point) const
+{
+    sf::FloatRect rect(pos, size);
+    return rect.contains(point);
 }

@@ -23,7 +23,7 @@ void StartButton::setState(bool newState)
 	state = newState;
 }
 
-StartButton::StartButton(sf::Vector2f _pos, sf::RenderWindow* window) : Entity(_pos, window), state(false),
+StartButton::StartButton(sf::Vector2f _pos, sf::RenderWindow* window) : UIElement(_pos, window), state(false),
 triangle(8, 3), rectangle({ 13, 13 }), outline(sf::PrimitiveType::LineStrip) 
 {
 	triangle.setFillColor(sf::Color::White);
@@ -45,8 +45,8 @@ StartButton::~StartButton() {
 
 }
 
-bool StartButton::isMouseOver(sf::Vector2f mousePos)
+bool StartButton::contains(const sf::Vector2f& point) const
 {
-	sf::FloatRect bounds( pos, { 20, 20 });
-	return bounds.contains(mousePos);
+	sf::FloatRect bounds(pos, { 20, 20 });
+	return bounds.contains(point);
 }

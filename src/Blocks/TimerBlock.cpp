@@ -59,13 +59,14 @@ float TimerBlock::getInnerHeight()
     return 0.0;
 }
 
-TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, float height, double durationSecs) :
+TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::View* view, float height, double durationSecs) :
     Block(_pos, { 120, height }, window), innerNextBlock(nullptr), elapsedTime(sf::seconds(0)),
     shape1({ 20, 100 }), shape2({ 25, 25 }), shape3({ 75, 30 }), shape4({ 25, 5 }), shape5({20, 30}),
-    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), field(pos, window, {39, 16})
+    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), field(pos, window, {39, 16}), view(view)
 {
     timeToWork = sf::seconds(durationSecs);
     field.setText(std::to_string(durationSecs));
+    field.setView(view);
     float offset = size.y - 30;
 
     shape1.setFillColor(sf::Color(44, 122, 65));
@@ -144,7 +145,7 @@ bool TimerBlock::blockInteract(Block* other, bool disconneting)
 
 TimerBlock* TimerBlock::clone()
 {
-    return new TimerBlock(pos, window, size.y, getDuration());
+    return new TimerBlock(pos, window, view, size.y, getDuration());
 }
 
 

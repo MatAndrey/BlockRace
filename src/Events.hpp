@@ -22,3 +22,13 @@ struct StopSimulationEvent {};
 struct DisableBlocksEvent {};
 
 struct CarAccidentEvent {};
+
+struct SaveFileEvent {
+    std::wstring fileName;
+};
+
+struct LoadFileEvent {
+    std::wstring fileName;
+};
+
+struct ExitEvent {};

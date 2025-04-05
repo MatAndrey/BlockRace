@@ -29,7 +29,7 @@ private:
     sf::Font font;
     sf::Text titleText;
     sf::Text messageText;
-    std::vector<Button> buttons;
+    std::vector<Button*> buttons;
     Callback currentCallback;
 
     bool visible = false;

@@ -30,10 +30,21 @@ add_executable(BlockRace
     "src/UI/StartButton.cpp" 
     "src/Blocks/RotationBlock.cpp"
     "src/UI/TextField.cpp"
- "src/UI/NumberField.cpp" "src/Blocks/RotationBlock.cpp" "src/Level.cpp" "src/UI/PopuppWindow.cpp" "src/UI/Button.cpp" "src/BlockManager.cpp")
+    "src/UI/NumberField.cpp" 
+    "src/Blocks/RotationBlock.cpp" 
+    "src/Level.cpp" 
+    "src/UI/PopupWindow.cpp" 
+    "src/UI/Button.cpp" 
+    "src/BlockManager.cpp" 
+    "src/UI/Menu.cpp" 
+    "src/FileDialog.cpp" 
+    "src/UI/UIElement.cpp")
 
 # Добавление assets в билд
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
 
 # Подключаем SFML к проекту
 target_link_libraries(BlockRace PRIVATE sfml-graphics sfml-window sfml-system nlohmann_json::nlohmann_json)
+if(WIN32)
+    target_link_libraries(BlockRace PRIVATE comdlg32.lib)
+endif()

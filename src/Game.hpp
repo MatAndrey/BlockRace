@@ -6,12 +6,15 @@
 #include "EventBus.hpp"
 #include "UI/PopupWindow.hpp"
 #include "BlockManager.hpp"
+#include "UI/Menu.hpp"
+#include "UI/UIElement.hpp"
 
 class Game {
 	Car car;
 	Level level;
 	PopupWindow popup;
 	BlockManager blockManager;
+	Menu menu;
 
 	sf::View appView;
 	sf::View blocksView;
@@ -29,12 +32,15 @@ class Game {
 	void setupEventListeners();
 	void handleEvents();
 	void onKeyPressed(const sf::Event::KeyPressed& event);
+	void onMouseMoved(const sf::Event::MouseMoved& event);
 	void onWindowResized(const sf::Event::Resized& event);
 	void onWindowClosed(const sf::Event::Closed& event);
 	void onSimulationStop(const StopSimulationEvent& event);
 	void onCarAccident(const CarAccidentEvent& event);
+	void onSaveFile(const SaveFileEvent& event);
+	void onLoadFile(const LoadFileEvent& event);
+	void onExit(const ExitEvent& event);
 public:
 	Game();
-	~Game();
 	void loop();
 };

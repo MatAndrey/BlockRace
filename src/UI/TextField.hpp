@@ -1,10 +1,10 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <string>
-#include "../Entity.hpp"
 #include "../EventBus.hpp"
+#include "UIElement.hpp"
 
-class TextField : public Entity {
+class TextField : public UIElement {
     sf::RectangleShape background;
     sf::Vector2f size;
     sf::Font font;
@@ -25,4 +25,5 @@ public:
     void handlePress(const BlockPressedEvent& event);
     void handleTextEntered(const sf::Event::TextEntered& event);
     virtual void addCharacter(char32_t c);
+    virtual bool contains(const sf::Vector2f& point) const;
 };

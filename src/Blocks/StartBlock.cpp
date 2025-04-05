@@ -14,11 +14,13 @@ void StartBlock::render() {
     button.render();
 }
 
-StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window):
+StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::View* view):
     Block(_pos, {120, 30}, window),
     shape1(size), shape2({ 25, 5 }),
-    button(_pos, window)
+    button(_pos, window),
+    view(view)
 {
+    button.setView(view);
     canBeChild = false;
     shape1.setFillColor(sf::Color(44, 122, 65));
 
@@ -41,18 +43,13 @@ StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window):
     EventBus::get().subscribe<DisableBlocksEvent>(this, &StartBlock::handleDisable);
 }
 
-bool StartBlock::isMouseOver(sf::Vector2f pos)
-{
-    return button.isMouseOver(pos);
-}
-
 StartBlock::~StartBlock() {
 
 }
 
 StartBlock* StartBlock::clone()
 {
-    return new StartBlock(pos, window);
+    return new StartBlock(pos, window, view);
 }
 
 Block* StartBlock::update(Car& car) {
@@ -71,7 +68,7 @@ std::string StartBlock::name()
 
 void StartBlock::handlePress(const BlockPressedEvent& event)
 {
-    if (button.isMouseOver(event.worldPos)) {
+    if (button.contains(event.worldPos)) {
         if (button.getState()) {
             button.setState(false);
             EventBus::get().publish(StopSimulationEvent{});
