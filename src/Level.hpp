@@ -24,5 +24,5 @@ public:
 
     void Level::render(sf::View& view);
     void update();
-    void carReset();
+    void reset();
 };

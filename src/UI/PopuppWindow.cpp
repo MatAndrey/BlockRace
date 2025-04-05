@@ -48,6 +48,7 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
 
 void PopupWindow::hide() {
     visible = false;
+    buttons.clear();
 }
 
 void PopupWindow::render() {
@@ -72,6 +73,7 @@ void PopupWindow::handleEvent(const sf::Event& event) {
         if (mousePressed->button == sf::Mouse::Button::Left) {
             for (int i = 0; i < buttons.size(); i++) {
                 if (buttons[i].isInBoundingBox(mousePos) && currentCallback) {
+                    hide();
                     currentCallback(i);
                 }
             }

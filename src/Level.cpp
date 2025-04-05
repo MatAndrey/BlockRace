@@ -25,7 +25,7 @@ Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
 		roadBorders.push_back(vertexes);
 	}
 	
-	carReset();
+	reset();
 }
 
 bool Level::checkCollision() {
@@ -120,7 +120,7 @@ void Level::update()
     }
 }
 
-void Level::carReset()
+void Level::reset()
 {
 	car->reset(carInitPos, carInitDir);
 }

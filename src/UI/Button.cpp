@@ -20,6 +20,7 @@ Button::Button(sf::Vector2f _pos, sf::RenderWindow* window, std::wstring textCon
 
 Button::~Button()
 {
+	EventBus::get().unsubscribe<sf::Event::MouseButtonPressed>(this);
 }
 
 void Button::render()
