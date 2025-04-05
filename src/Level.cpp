@@ -116,7 +116,7 @@ void Level::render(sf::View& view)
 void Level::update()
 {
     if (checkCollision()) {
-        EventBus::get().publish<StopSimulationEvent>(StopSimulationEvent{});
+        EventBus::get().publish<CarAccidentEvent>(CarAccidentEvent{});
     }
 }
 
