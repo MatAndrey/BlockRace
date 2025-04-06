@@ -21,6 +21,9 @@ void TimerBlock::render()
     window->draw(outline, transform);
 
     window->draw(text, transform);
+
+    field.pos = pos + sf::Vector2f{ 55, 7 };
+    field.render();
 }
 
 void TimerBlock::resize()
@@ -42,6 +45,10 @@ void TimerBlock::resize()
     for (int i = 0; i < vertexes.size(); i++) {
         outline[i].position = vertexes[i];
     }
+
+    if (nextBlock) {
+        nextBlock->moveBy(pos + sf::Vector2f{ 0, offset + 30 } - nextBlock->pos);
+    }
 }
 
 float TimerBlock::getInnerHeight()
@@ -52,13 +59,15 @@ float TimerBlock::getInnerHeight()
     return 0.0;
 }
 
-TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window) :
-    Block(_pos, { 120, 30 }, window), innerNextBlock(nullptr), timerDuration(sf::seconds(1)), elapsedTime(sf::seconds(0)),
+TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::View* view, float height, double durationSecs) :
+    Block(_pos, { 120, height }, window), innerNextBlock(nullptr), elapsedTime(sf::seconds(0)),
     shape1({ 20, 100 }), shape2({ 25, 25 }), shape3({ 75, 30 }), shape4({ 25, 5 }), shape5({20, 30}),
-    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), isWorking(false)
+    shape6({ 25, 25 }), shape7({ 55, 30 }), shape8({ 25, 5 }), field(pos, window, {39, 16}), view(view)
 {
-    float offset = getInnerHeight() + 60;
-    size.y = offset + 30;
+    timeToWork = sf::seconds(durationSecs);
+    field.setText(std::to_string(durationSecs));
+    field.setView(view);
+    float offset = size.y - 30;
 
     shape1.setFillColor(sf::Color(44, 122, 65));
     shape1.setSize({ 20, size.y });
@@ -84,7 +93,7 @@ TimerBlock::TimerBlock(sf::Vector2f _pos, sf::RenderWindow* window) :
     shape8.setFillColor(sf::Color(44, 122, 65));
     shape8.setPosition({ 20, offset + 30 });
 
-    text.setString(L"1 секунду");
+    text.setString(L"В течен.           сек");
     text.setCharacterSize(14);
     text.setPosition(sf::Vector2f{ 5, 8 });
 
@@ -113,21 +122,21 @@ void TimerBlock::moveBy(sf::Vector2f delta)
     }
 }
 
-bool TimerBlock::blockInteract(Block* other)
+bool TimerBlock::blockInteract(Block* other, bool disconneting)
 {
-    if (innerNextBlock == other) {
+    if (innerNextBlock == other && innerNextBlock != nullptr && disconneting) {
+        innerNextBlock->prevBlock = nullptr;
         innerNextBlock = nullptr;
     }
 
     if (other != nullptr && nextBlock != other && other->canBeChild) {
         if ((sf::Vector2f(pos.x + 20 - other->pos.x, pos.y + 30 - other->pos.y)).length() < interactionRadius) {
-            if (other->prevBlock) {
-                other->prevBlock->nextBlock = nullptr;
-            }
-            innerNextBlock = other;
-            other->prevBlock = this;
-            other->moveBy(sf::Vector2f(pos.x + 20, pos.y + 30) - other->pos);
-            return true;
+            if (!other->prevBlock) {
+                innerNextBlock = other;
+                other->prevBlock = this;
+                other->moveBy(sf::Vector2f(pos.x + 20, pos.y + 30) - other->pos);
+                return true;
+            }            
         }
     }
     if (Block::blockInteract(other)) return true;
@@ -136,31 +145,32 @@ bool TimerBlock::blockInteract(Block* other)
 
 TimerBlock* TimerBlock::clone()
 {
-    return new TimerBlock(pos, window);
+    return new TimerBlock(pos, window, view, size.y, getDuration());
 }
 
-Block* TimerBlock::update(Car& car)
+void TimerBlock::activate(Car& car)
 {
-    if (isWorking) {
-        elapsedTime += clock.restart();
-        if (elapsedTime < timerDuration) {
-            Block* blockToUpdate = innerNextBlock;
-            while (blockToUpdate) {
-                blockToUpdate = blockToUpdate->update(car);
-            }
-            return this;
+    if (!isRunning) {
+        updateDuration();
+        Block::activate(car);
+        Block* nextInner = innerNextBlock;
+        while (nextInner) {
+            nextInner->activate(car);
+            nextInner = nextInner->getNext();
         }
-        else {
-            isWorking = false;
-            return nextBlock;
+    }    
+}
+
+void TimerBlock::deactivate(Car& car)
+{
+    if (isRunning) {
+        Block::deactivate(car);
+        Block* nextInner = innerNextBlock;
+        while (nextInner) {
+            nextInner->deactivate(car);
+            nextInner = nextInner->getNext();
         }
-    }
-    else {
-        clock.restart();
-        elapsedTime = sf::seconds(0);
-        isWorking = true;
-        return this;
-    }
+    }    
 }
 
 bool TimerBlock::isInBoundingBox(sf::Vector2f point) {
@@ -177,4 +187,22 @@ bool TimerBlock::isInBoundingBox(sf::Vector2f point) {
 std::string TimerBlock::name()
 {
     return "TimerBlock";
+}
+
+double TimerBlock::getDuration()
+{
+    updateDuration();
+    return timeToWork.asSeconds();
+}
+
+void TimerBlock::updateDuration()
+{
+    try {
+        float newDuration = std::stof(field.getText());
+        timeToWork = sf::seconds(newDuration);
+    }
+    catch (...) {
+        field.setText("1");
+        timeToWork = sf::seconds(1);
+    }
 }

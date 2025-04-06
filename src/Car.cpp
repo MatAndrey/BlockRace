@@ -1,90 +1,87 @@
 #include "Car.hpp"
 #include <iostream>
 
-void Car::render()
+void Car::render(sf::Vector2f interpolatedPos)
 {
-    sf::Texture texture(".\\assets\\images\\car.png");
-    sf::Sprite sprite(texture);
-    sprite.setScale({ 0.1, 0.1 });
-
-    sprite.setRotation(direction);
-    sprite.setPosition(pos);
-
-    window->draw(sprite);
+    sf::Transform transform;
+    transform.translate(interpolatedPos);
+    transform.rotate(direction);
+    window->draw(sprite, transform);
 }
 
-void Car::reset()
+void Car::reset(sf::Vector2f defaultPos, sf::Angle defaultDir)
 {
+    pos = defaultPos;
+    direction = defaultDir;
     acceleration = 0;
     speed = 0;
-    direction = sf::degrees(-90);
+    directionDelta = sf::degrees(0);
 }
 
-void Car::update(sf::Time elapsed) {
-    float dt = elapsed.asSeconds() * 10;
-    float friction = 1.0f;
+void Car::update(sf::Time deltaTime) {
+    prevPos = pos;
+    double dt = deltaTime.asSeconds() * 10;
+    if (acceleration) {
+        speed += 3 * dt;
+    }
+    if (abs(speed) > maxSpeed) {
+        speed = abs(speed) / speed * maxSpeed;
+    }
+    speed *= std::exp(-friction * dt * (deceleration ? 8 : 1));
+ 
 
-    speed += acceleration * dt;
-    if (acceleration > 0) {
-        acceleration -= dt;
-    }
-    else if (acceleration < 0) {
-        acceleration += dt;
-    }
-    if (abs(acceleration) < 0.1f) {
-        acceleration = 0;
-    }
-    if (acceleration == 0.0f) {
-        if (speed > 0.0f) {
-            speed = std::max(0.0f, speed - friction * dt);
-        }
-        else if (speed < 0.0f) {
-            speed = std::min(0.0f, speed + friction * dt);
-        }
-    }
-
-    if (std::abs(speed) < 0.1f) {
+    if (std::abs(speed) < 0.05f) {
         speed = 0.0f;
     }
-    if (speed > maxSpeed) {
-        speed = maxSpeed;
-    }
-    if (speed < -maxSpeed) {
-        speed = -maxSpeed;
-    }
-
+    if (abs(speed) > 2) {
+        direction += directionDelta * dt;
+    }    
     float angle = direction.asRadians();
-    sf::Vector2f velocity = sf::Vector2f(std::cos(angle), std::sin(angle)) * speed * dt;
-    pos += velocity;
 
-    if (std::abs(acceleration) < 0.1f) {
-        acceleration = 0.0f;
-    }
+    double dx = std::cos(angle) * speed * dt;
+    double dy = std::sin(angle) * speed * dt;
+
+    pos.x += dx;
+    pos.y += dy;
 }
 
-void Car::accelerate(float _acceleration)
+void Car::accelerate(bool state)
 {
-    acceleration += _acceleration;
-    if (acceleration > maxAcceleration) {
-        acceleration = maxAcceleration;
-    }
-    if (acceleration < -maxAcceleration) {
-        acceleration = -maxAcceleration;
-    }
+    acceleration = state;
 }
 
-void Car::decelerate(float _deceleration)
+void Car::decelerate(bool state)
 {
-    acceleration -= _deceleration;
-    if (acceleration < 0) {
-        acceleration = 0;
-    }
+    deceleration = state;
 }
 
-Car::Car(sf::Vector2f _pos, sf::RenderWindow* window) : 
+void Car::setDirection(sf::Angle _dir)
+{
+    directionDelta += _dir;
+}
+
+const sf::Transform& Car::getTransform() const
+{
+    sf::Transform t;
+    t.translate(pos);
+    t.rotate(direction);
+    return t;
+}
+
+sf::FloatRect Car::getGlobalBounds() const
+{
+    return sprite.getGlobalBounds();
+}
+
+
+Car::Car(sf::Vector2f _pos, sf::RenderWindow* window) :
     Entity(_pos, window),
-    speed(0), acceleration(0), direction(sf::degrees(-90))
-{}
+    speed(0), acceleration(0), direction(sf::degrees(-90)), directionDelta(sf::degrees(0)),
+    texture(".\\assets\\images\\car.png"), sprite(texture)
+{
+    sprite.setScale({ 0.1, 0.1 });
+    sprite.setOrigin(sprite.getLocalBounds().size / 2.0f);
+}
 
 Car::~Car()
 {

@@ -1,18 +1,20 @@
 #pragma once
 #include "Block.hpp"
 
-class AccelerationBlock : public Block {
+class RotationBlock : public Block {
+	sf::Angle direction;
+
 	sf::RectangleShape shape1;
 	sf::RectangleShape shape2;
 	sf::RectangleShape shape3;
-	
+
 public:
-	AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window);
-	~AccelerationBlock();
-	virtual AccelerationBlock* clone();
+	RotationBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::Angle _dir);
+	~RotationBlock();
+	float getAngle();
+	virtual RotationBlock* clone();
 	virtual void render();
 	virtual std::string name();
-	virtual bool handleEvent(sf::Event& event, sf::Vector2f mousePos);
 	virtual void activate(Car& car);
 	virtual void deactivate(Car& car);
 };

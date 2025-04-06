@@ -4,18 +4,29 @@
 
 class Car : public Entity
 {
-	float acceleration;
+	bool acceleration = false;
+	bool deceleration = false;
 	float speed;
-	sf::Angle direction;
+	
+	sf::Angle directionDelta;
+	const float maxSpeed = 300;
+	const float friction = 0.1;
 
-	const float maxAcceleration = 10;
-	const float maxSpeed = 10;
+	sf::Texture texture;
+	sf::Sprite sprite;
+
 public:
-	virtual void render();
-	void reset();
-	void update(sf::Time elapsed);
-	void accelerate(float acceleration);
-	void decelerate(float deceleration);
+	virtual void render(sf::Vector2f interpolatedPos);
+	virtual void render() {};
+	sf::Angle direction;
+	sf::Vector2f prevPos;
+	void reset(sf::Vector2f defaultPos, sf::Angle defaultDir);
+	void update(sf::Time dt);
+	void accelerate(bool state);
+	void decelerate(bool state);
+	void setDirection(sf::Angle _dir);
+	const sf::Transform& getTransform() const;
+	sf::FloatRect getGlobalBounds() const;
 	Car(sf::Vector2f _pos, sf::RenderWindow* window);
 	~Car();
 };

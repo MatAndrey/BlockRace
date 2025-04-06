@@ -10,11 +10,14 @@ protected:
 	sf::Font font;
 	sf::Text text;
 	static const short interactionRadius = 10;
+	sf::Time timeToWork;
+	sf::Time elapsedTime;
 public:
 	sf::Vector2f size;
 	Block* nextBlock;
 	Block* prevBlock;
 	bool canBeChild;
+	bool isRunning = false;
 
 	Block(sf::Vector2f _pos, sf::Vector2f _size, sf::RenderWindow* window);
 	virtual ~Block();
@@ -22,9 +25,12 @@ public:
 	virtual void moveBy(sf::Vector2f);
 	float getChainHeight();
 	virtual bool isInBoundingBox(sf::Vector2f point);
-	virtual bool blockInteract(Block*);
+	virtual bool blockInteract(Block*, bool disconneting = true);
 	virtual Block* clone() = 0;
 	virtual void render() = 0;
-	virtual Block* update(Car& car) = 0;
+	virtual void update(Car& car, sf::Time dt);
 	virtual std::string name() = 0;
+	virtual Block* getNext();
+	virtual void activate(Car& car);
+	virtual void deactivate(Car& car);
 };

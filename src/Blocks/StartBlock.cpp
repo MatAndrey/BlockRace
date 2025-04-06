@@ -14,11 +14,13 @@ void StartBlock::render() {
     button.render();
 }
 
-StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window):
+StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::View* view):
     Block(_pos, {120, 30}, window),
     shape1(size), shape2({ 25, 5 }),
-    button(_pos, window)
+    button(_pos, window),
+    view(view)
 {
+    button.setView(view);
     canBeChild = false;
     shape1.setFillColor(sf::Color(44, 122, 65));
 
@@ -36,29 +38,19 @@ StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window):
         outline[i].position = vertexes[i];
         outline[i].color = sf::Color::White;
     }
-}
 
-bool StartBlock::isMouseOver(sf::Vector2f pos)
-{
-    return button.isMouseOver(pos);
+    EventBus::get().subscribe<BlockPressedEvent>(this, &StartBlock::handlePress);
+    EventBus::get().subscribe<DisableBlocksEvent>(this, &StartBlock::handleDisable);
 }
 
 StartBlock::~StartBlock() {
-
+    EventBus::get().unsubscribe<BlockPressedEvent>(this);
+    EventBus::get().unsubscribe<DisableBlocksEvent>(this);
 }
 
 StartBlock* StartBlock::clone()
 {
-    return new StartBlock(pos, window);
-}
-
-Block* StartBlock::update(Car& car) {
-    if (nextBlock != nullptr) {
-        return nextBlock;
-    }
-    else {
-        return nullptr;
-    }
+    return new StartBlock(pos, window, view);
 }
 
 std::string StartBlock::name()
@@ -66,7 +58,23 @@ std::string StartBlock::name()
     return "StartBlock";
 }
 
-bool StartBlock::click(sf::Vector2f mousePos)
+void StartBlock::handlePress(const BlockPressedEvent& event)
 {
-    return button.click(mousePos);
+    if (button.contains(event.worldPos)) {
+        if (button.getState()) {
+            button.setState(false);
+            EventBus::get().publish(StopSimulationEvent{});
+        }
+        else {
+            if (!event.isRunning) {
+                button.setState(true);
+                EventBus::get().publish(StartSimulationEvent{ this });
+            }            
+        }
+    }
+}
+
+void StartBlock::handleDisable(const DisableBlocksEvent& event)
+{
+    button.setState(false);
 }

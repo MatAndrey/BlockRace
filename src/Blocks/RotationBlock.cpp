@@ -1,8 +1,7 @@
-#include "AccelerationBlock.hpp"
-#include <iostream>
+#include "RotationBlock.hpp"
 
-AccelerationBlock::AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window):
-	Block(_pos, {120, 30}, window), shape1({20, 30}), shape2({25, 30}), shape3({75, 30})
+RotationBlock::RotationBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::Angle _dir) :
+    Block(_pos, { 120, 30 }, window), direction(_dir), shape1({ 20, 30 }), shape2({ 25, 30 }), shape3({ 75, 30 })
 {
     shape1.setFillColor(sf::Color(44, 71, 122));
 
@@ -12,7 +11,16 @@ AccelerationBlock::AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window
     shape3.setFillColor(sf::Color(44, 71, 122));
     shape3.setPosition(sf::Vector2f(45, 0));
 
-    text.setString(L"Ускорение");
+    if (direction == sf::degrees(0)) {
+        text.setString(L"Прямо");
+    }
+    else if (direction > sf::degrees(0)) {
+        text.setString(L"Направо");
+    }
+    else {
+        text.setString(L"Налево");
+    }
+    
     text.setCharacterSize(14);
     text.setPosition(sf::Vector2f{ 5, 8 });
 
@@ -27,16 +35,21 @@ AccelerationBlock::AccelerationBlock(sf::Vector2f _pos, sf::RenderWindow* window
     }
 }
 
-AccelerationBlock::~AccelerationBlock()
+RotationBlock::~RotationBlock()
 {
 }
 
-AccelerationBlock* AccelerationBlock::clone()
+float RotationBlock::getAngle()
 {
-    return new AccelerationBlock(pos, window);
+    return direction.asDegrees();
 }
 
-void AccelerationBlock::render()
+RotationBlock* RotationBlock::clone()
+{
+    return new RotationBlock(pos, window, direction);
+}
+
+void RotationBlock::render()
 {
     sf::Transform transform;
     transform.translate(pos);
@@ -49,28 +62,23 @@ void AccelerationBlock::render()
     window->draw(text, transform);
 }
 
-std::string AccelerationBlock::name()
+std::string RotationBlock::name()
 {
-    return "AccelerationBlock";
+    return "RotationBlock";
 }
 
-bool AccelerationBlock::handleEvent(sf::Event& event, sf::Vector2f mousePos)
-{
-    return false;
-}
-
-void AccelerationBlock::activate(Car& car)
+void RotationBlock::activate(Car& car)
 {
     if (!isRunning) {
         Block::activate(car);
-        car.accelerate(true);
-    }       
+        car.setDirection(direction);
+    }    
 }
 
-void AccelerationBlock::deactivate(Car& car)
+void RotationBlock::deactivate(Car& car)
 {
     if (isRunning) {
         Block::deactivate(car);
-        car.accelerate(false);
+        car.setDirection(-direction);
     }    
 }

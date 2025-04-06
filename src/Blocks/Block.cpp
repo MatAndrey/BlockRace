@@ -3,7 +3,8 @@
 
 Block::Block(sf::Vector2f _pos, sf::Vector2f _size, sf::RenderWindow* window) :
     Entity(_pos, window), size(_size), nextBlock(nullptr), outline(sf::PrimitiveType::LineStrip),
-    font(".\\assets\\fonts\\Share-Tech-CYR.otf"), text(font), canBeChild(true), prevBlock(nullptr)
+    font(".\\assets\\fonts\\Share-Tech-CYR.otf"), text(font), canBeChild(true), prevBlock(nullptr),
+    timeToWork(sf::milliseconds(500))
 {}
 
 Block::~Block() {}
@@ -13,14 +14,15 @@ bool Block::isInBoundingBox(sf::Vector2f point) {
     return rect.contains(point);
 }
 
-bool Block::blockInteract(Block* other)
+bool Block::blockInteract(Block* other, bool disconneting)
 {
     if (other == this) return false;
     if (other == nullptr) return false;
-    
-    if (nextBlock == other) {
+
+    if (nextBlock == other && disconneting && (pos.x - other->pos.x != 0 && pos.y + size.y - other->pos.y != 0)) {
         if (other->prevBlock) {
             other->prevBlock->nextBlock = nullptr;
+            other->prevBlock = nullptr;
         }
         nextBlock = nullptr;
         return true;
@@ -43,6 +45,42 @@ bool Block::blockInteract(Block* other)
         }
     }
     return false;
+}
+
+void Block::update(Car& car, sf::Time dt)
+{
+    elapsedTime += dt;
+    if (elapsedTime < timeToWork) {
+        activate(car);     
+    }
+    else {
+        deactivate(car);
+    }
+}
+
+Block* Block::getNext()
+{
+    return nextBlock;
+}
+
+void Block::activate(Car& car)
+{
+    if (!isRunning) {
+        isRunning = true;
+        elapsedTime = sf::seconds(0);
+        for (int i = 0; i < outline.getVertexCount(); i++) {
+            outline[i].color = sf::Color::Blue;
+        }
+    }    
+}
+
+void Block::deactivate(Car& car)
+{
+    isRunning = false;
+    elapsedTime = sf::seconds(0);
+    for (int i = 0; i < outline.getVertexCount(); i++) {
+        outline[i].color = sf::Color::White;
+    }
 }
 
 void Block::moveBy(sf::Vector2f delta)
