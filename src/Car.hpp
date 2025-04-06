@@ -16,8 +16,10 @@ class Car : public Entity
 	sf::Sprite sprite;
 
 public:
-	virtual void render();
+	virtual void render(sf::Vector2f interpolatedPos);
+	virtual void render() {};
 	sf::Angle direction;
+	sf::Vector2f prevPos;
 	void reset(sf::Vector2f defaultPos, sf::Angle defaultDir);
 	void update(sf::Time dt);
 	void accelerate(bool state);

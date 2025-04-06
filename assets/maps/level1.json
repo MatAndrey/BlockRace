@@ -1,7 +1,7 @@
 {
   "mapTexturePath": ".\\assets\\maps\\level1.jpg",
-  "carInitX": 1400,
-  "carInitY": 860,
+  "carInitX": 1370,
+  "carInitY": 840,
   "carInitDir": 180,
   "checkpoints": [
     [ 952.01, 835.19 ],

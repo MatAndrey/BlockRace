@@ -1,13 +1,12 @@
 #include "Car.hpp"
 #include <iostream>
 
-void Car::render()
+void Car::render(sf::Vector2f interpolatedPos)
 {
     sf::Transform transform;
-    transform.translate(pos);
+    transform.translate(interpolatedPos);
     transform.rotate(direction);
     window->draw(sprite, transform);
-
 }
 
 void Car::reset(sf::Vector2f defaultPos, sf::Angle defaultDir)
@@ -20,6 +19,7 @@ void Car::reset(sf::Vector2f defaultPos, sf::Angle defaultDir)
 }
 
 void Car::update(sf::Time deltaTime) {
+    prevPos = pos;
     double dt = deltaTime.asSeconds() * 10;
     if (acceleration) {
         speed += 3 * dt;
@@ -80,6 +80,7 @@ Car::Car(sf::Vector2f _pos, sf::RenderWindow* window) :
     texture(".\\assets\\images\\car.png"), sprite(texture)
 {
     sprite.setScale({ 0.1, 0.1 });
+    sprite.setOrigin(sprite.getLocalBounds().size / 2.0f);
 }
 
 Car::~Car()

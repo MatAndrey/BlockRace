@@ -71,10 +71,7 @@ void Level::updateCheckPoint()
 {
     sf::CircleShape point = checkpoints[currCheckpoint];
 
-    sf::FloatRect bounds = car->getGlobalBounds();
-    sf::Vector2f localCenter(bounds.size.x / 2, bounds.size.y / 2);
-    sf::Vector2f carCenter = car->getTransform().transformPoint({bounds.position.x + localCenter.x,
-        bounds.position.y + localCenter.y});
+    sf::Vector2f carCenter = car->getTransform().transformPoint({ 0, 0 });
 
     sf::Vector2f circleCenter = point.getPosition() + sf::Vector2f(point.getRadius(), point.getRadius());
 
@@ -128,12 +125,13 @@ Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
 	reset();
 }
 
-void Level::render(sf::View& view)
+void Level::render(sf::View& view, float alpha)
 {
-    view.setCenter(car->pos);
+    sf::Vector2f interpolatedPos = car->prevPos + alpha * (car->pos - car->prevPos);
+    view.setCenter(interpolatedPos);
 	window->draw(mapSprite);
     window->draw(checkpoints[currCheckpoint]);
-    car->render();
+    car->render(interpolatedPos);
     
     //for (const auto& border : roadBorders) {
     //    sf::VertexArray lines(sf::PrimitiveType::LineStrip);

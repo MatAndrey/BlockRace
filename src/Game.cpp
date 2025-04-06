@@ -180,7 +180,7 @@ void Game::render()
     window.clear(sf::Color(100, 100, 100));
 
 	window.setView(raceView);
-	level.render(raceView);
+	level.render(raceView, timeAccumulator / deltaTime);
 
 	window.setView(blocksView);
 	blockManager.render();

@@ -27,7 +27,7 @@ class Level {
 public:
     Level(const std::string& path, sf::RenderWindow* window, Car* car);
 
-    void render(sf::View& view);
+    void render(sf::View& view, float alpha);
     void update();
     void reset();
 };
