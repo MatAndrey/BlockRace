@@ -1,33 +1,6 @@
 #include "Level.hpp"
 #include <iostream>
 
-Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
-	car(car), window(window), mapTexture(), mapSprite(mapTexture)
-{
-	std::ifstream file(path);
-
-	jsonData = json::parse(file);
-
-	if (mapTexture.loadFromFile(jsonData["mapTexturePath"].get<std::string>())) {
-		mapSprite.setTexture(mapTexture);
-		mapSprite.setTextureRect({ {0 , 0 }, sf::Vector2i(mapTexture.getSize()) });
-	}
-	
-	carInitPos = sf::Vector2f(jsonData["carInitX"], jsonData["carInitY"]);
-	carInitDir = sf::degrees(jsonData["carInitDir"]);
-
-
-	for (const auto& border : jsonData["mapBorders"]) {
-		std::vector<sf::Vector2f> vertexes;
-		for (const auto& borderVertex : border) {
-			vertexes.push_back({ borderVertex[0], borderVertex[1] });
-		}
-		roadBorders.push_back(vertexes);
-	}
-	
-	reset();
-}
-
 bool Level::checkCollision() {
     if (roadBorders.empty()) return false;
 
@@ -94,23 +67,84 @@ bool Level::checkCollision() {
     return false; // Столкновений нет
 }
 
+void Level::updateCheckPoint()
+{
+    sf::CircleShape point = checkpoints[currCheckpoint];
+
+    sf::FloatRect bounds = car->getGlobalBounds();
+    sf::Vector2f localCenter(bounds.size.x / 2, bounds.size.y / 2);
+    sf::Vector2f carCenter = car->getTransform().transformPoint({bounds.position.x + localCenter.x,
+        bounds.position.y + localCenter.y});
+
+    sf::Vector2f circleCenter = point.getPosition() + sf::Vector2f(point.getRadius(), point.getRadius());
+
+    if (sf::Vector2f(circleCenter - carCenter).length() <= checkpointRadius) {
+        if (currCheckpoint + 1 < checkpoints.size()) {
+            currCheckpoint++;
+        }
+        else {
+            EventBus::get().publish<RaceFinishedEvent>(RaceFinishedEvent{});
+        }
+    }
+}
+
+Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
+	car(car), window(window), mapTexture(), mapSprite(mapTexture)
+{
+	std::ifstream file(path);
+	jsonData = json::parse(file);
+
+	if (mapTexture.loadFromFile(jsonData["mapTexturePath"].get<std::string>())) {
+		mapSprite.setTexture(mapTexture);
+		mapSprite.setTextureRect({ {0 , 0 }, sf::Vector2i(mapTexture.getSize()) });
+	}
+	
+	carInitPos = sf::Vector2f(jsonData["carInitX"], jsonData["carInitY"]);
+	carInitDir = sf::degrees(jsonData["carInitDir"]);
+
+
+	for (const auto& border : jsonData["mapBorders"]) {
+		std::vector<sf::Vector2f> vertexes;
+		for (const auto& borderVertex : border) {
+			vertexes.push_back({ borderVertex[0], borderVertex[1] });
+		}
+		roadBorders.push_back(vertexes);
+	}
+
+    checkpointRadius = jsonData["checkpointRadius"].get<float>();
+
+    for (const auto& checkpoint : jsonData["checkpoints"]) {
+        sf::Vector2f center{ checkpoint[0] - checkpointRadius, checkpoint[1] - checkpointRadius };
+        sf::CircleShape s;
+        s.setPosition(center);
+        s.setRadius(checkpointRadius);
+        s.setFillColor(sf::Color(0, 255, 0, 100));
+        s.setOutlineColor(sf::Color(0, 255, 0));
+        s.setOutlineThickness(1);
+        checkpoints.push_back(s);
+    }
+    updateCheckPoint();
+
+	reset();
+}
+
 void Level::render(sf::View& view)
 {
-	window->draw(mapSprite);
-    
-    for (const auto& border : roadBorders) {
-        sf::VertexArray lines(sf::PrimitiveType::LineStrip);
-        for (const auto& point : border) {
-            sf::Vertex v;
-            v.position = point;
-            v.color = sf::Color::Red;
-            lines.append(v);
-        }
-        window->draw(lines);
-    }
-    
-    car->render();
     view.setCenter(car->pos);
+	window->draw(mapSprite);
+    window->draw(checkpoints[currCheckpoint]);
+    car->render();
+    
+    //for (const auto& border : roadBorders) {
+    //    sf::VertexArray lines(sf::PrimitiveType::LineStrip);
+    //    for (const auto& point : border) {
+    //        sf::Vertex v;
+    //        v.position = point;
+    //        v.color = sf::Color::Red;
+    //        lines.append(v);
+    //    }
+    //    window->draw(lines);
+    //}  
 }
 
 void Level::update()
@@ -118,10 +152,12 @@ void Level::update()
     if (checkCollision()) {
         EventBus::get().publish<CarAccidentEvent>(CarAccidentEvent{});
     }
+    updateCheckPoint();
 }
 
 void Level::reset()
 {
+    currCheckpoint = 0;
 	car->reset(carInitPos, carInitDir);
 }
 

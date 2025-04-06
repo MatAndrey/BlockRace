@@ -32,3 +32,5 @@ struct LoadFileEvent {
 };
 
 struct ExitEvent {};
+
+struct RaceFinishedEvent {};

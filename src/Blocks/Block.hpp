@@ -11,6 +11,7 @@ protected:
 	sf::Text text;
 	static const short interactionRadius = 10;
 	sf::Time timeToWork;
+	sf::Time elapsedTime;
 public:
 	sf::Vector2f size;
 	Block* nextBlock;
@@ -27,7 +28,7 @@ public:
 	virtual bool blockInteract(Block*, bool disconneting = true);
 	virtual Block* clone() = 0;
 	virtual void render() = 0;
-	virtual sf::Time update(Car& car, sf::Time elapsed);
+	virtual void update(Car& car, sf::Time dt);
 	virtual std::string name() = 0;
 	virtual Block* getNext();
 	virtual void activate(Car& car);

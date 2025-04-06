@@ -17,6 +17,7 @@ protected:
     std::string inputString;
 public:
     TextField(sf::Vector2f _pos, sf::RenderWindow* window, sf::Vector2f size);
+    virtual ~TextField();
     virtual void render();
     std::string getText() const;
     void setText(const std::string& newText);

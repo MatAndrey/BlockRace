@@ -29,7 +29,6 @@ public:
 	virtual bool blockInteract(Block*, bool disconeting = true);
 	virtual TimerBlock* clone();
 	virtual void render();
-	virtual sf::Time update(Car& car, sf::Time elapsed);
 	virtual bool isInBoundingBox(sf::Vector2f point);
 	virtual std::string name();
 	double getDuration();

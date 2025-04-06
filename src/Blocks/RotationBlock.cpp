@@ -69,12 +69,16 @@ std::string RotationBlock::name()
 
 void RotationBlock::activate(Car& car)
 {
-    Block::activate(car);
-    car.setDirection(direction);
+    if (!isRunning) {
+        Block::activate(car);
+        car.setDirection(direction);
+    }    
 }
 
 void RotationBlock::deactivate(Car& car)
 {
-    Block::deactivate(car);
-    car.setDirection(sf::degrees(0));
+    if (isRunning) {
+        Block::deactivate(car);
+        car.setDirection(-direction);
+    }    
 }

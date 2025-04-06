@@ -21,6 +21,12 @@ TextField::TextField(sf::Vector2f _pos, sf::RenderWindow* window, sf::Vector2f s
     EventBus::get().subscribe<sf::Event::TextEntered>(this, &TextField::handleTextEntered);
 }
 
+TextField::~TextField()
+{
+    EventBus::get().unsubscribe<BlockPressedEvent>(this);
+    EventBus::get().unsubscribe<sf::Event::TextEntered>(this);
+}
+
 void TextField::render()
 {
     sf::Transform transform;

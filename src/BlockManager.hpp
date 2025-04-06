@@ -16,9 +16,9 @@ class BlockManager {
 	Block* movingBlock = nullptr;
 	bool leftHold = false;
 
-	sf::Time elapsed;
 	Block* nextBlockToUpdate = nullptr;
 	bool isRunning = false;
+	bool isSavedNow = true;
 
 	const float blockStoreWidth = 150;
 
@@ -33,8 +33,9 @@ public:
 	void saveToFile(std::wstring fileName);
 	void loadFromFile(std::wstring fileName);
 	void reset();
-
-	void onSimulationStart(const StartSimulationEvent& event);
+	bool isSaved() const;
+	void start(StartBlock* sb);
+	
 	void onMouseButtonPressed(const sf::Event::MouseButtonPressed& event);
 	void onMouseButtonReleased(const sf::Event::MouseButtonReleased& event);
 	void onMouseMoved(const sf::Event::MouseMoved& event);

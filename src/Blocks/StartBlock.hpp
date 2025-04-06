@@ -15,7 +15,6 @@ public:
 	virtual ~StartBlock();
 	virtual StartBlock* clone();
 	virtual void render();
-	virtual Block* update(Car& car);
 	virtual std::string name();
 	void handlePress(const BlockPressedEvent& event);
 	void handleDisable(const DisableBlocksEvent& event);

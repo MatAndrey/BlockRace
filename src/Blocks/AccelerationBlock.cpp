@@ -61,12 +61,16 @@ bool AccelerationBlock::handleEvent(sf::Event& event, sf::Vector2f mousePos)
 
 void AccelerationBlock::activate(Car& car)
 {
-    Block::activate(car);
-    car.accelerate(true);    
+    if (!isRunning) {
+        Block::activate(car);
+        car.accelerate(true);
+    }       
 }
 
 void AccelerationBlock::deactivate(Car& car)
 {
-    Block::deactivate(car);
-    car.accelerate(false);
+    if (isRunning) {
+        Block::deactivate(car);
+        car.accelerate(false);
+    }    
 }

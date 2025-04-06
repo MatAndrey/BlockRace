@@ -1,4 +1,5 @@
 #include "BlockManager.hpp"
+#include <iostream>
 
 BlockManager::BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksView):
 	window(window), car(car), blocksView(blocksView)
@@ -21,7 +22,6 @@ BlockManager::BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksV
 		y += block->size.y + 10;
 	}
 
-	EventBus::get().subscribe<StartSimulationEvent>(this, &BlockManager::onSimulationStart);
 	EventBus::get().subscribe<sf::Event::MouseButtonPressed>(this, &BlockManager::onMouseButtonPressed);
 	EventBus::get().subscribe<sf::Event::MouseButtonReleased>(this, &BlockManager::onMouseButtonReleased);
 	EventBus::get().subscribe<sf::Event::MouseMoved>(this, &BlockManager::onMouseMoved);
@@ -29,10 +29,8 @@ BlockManager::BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksV
 
 void BlockManager::update(sf::Time deltaTime)
 {
-	elapsed += deltaTime;
-
-	if (nextBlockToUpdate) {
-		elapsed -= nextBlockToUpdate->update(*car, elapsed);
+	if (nextBlockToUpdate && isRunning) {
+		nextBlockToUpdate->update(*car, deltaTime);
 		if (!nextBlockToUpdate->isRunning) {
 			nextBlockToUpdate = nextBlockToUpdate->getNext();
 		}
@@ -69,6 +67,7 @@ void BlockManager::saveToFile(std::wstring fileName)
 		}
 	}
 	file.close();
+	isSavedNow = true;
 }
 
 void BlockManager::loadFromFile(std::wstring fileName)
@@ -129,12 +128,16 @@ void BlockManager::reset()
 	leftHold = false;
 }
 
-void BlockManager::onSimulationStart(const StartSimulationEvent& event)
+bool BlockManager::isSaved() const
+{
+	return isSavedNow;
+}
+
+void BlockManager::start(StartBlock* sb)
 {
 	if (!isRunning) {
 		isRunning = true;
-		nextBlockToUpdate = event.startBlock->getNext();
-		elapsed = sf::seconds(0);
+		nextBlockToUpdate = sb->getNext();
 	}
 }
 
@@ -147,51 +150,59 @@ void BlockManager::onMouseButtonPressed(const sf::Event::MouseButtonPressed& mou
 		sf::Vector2f worldPos = window->mapPixelToCoords(mouseButtonPressed.position, *blocksView);
 
 		if (blocksViewRect.contains(sf::Vector2f(mouseButtonPressed.position))) {
-			EventBus::get().publish(BlockPressedEvent{
+			if (worldPos.x > blockStoreWidth) {
+				EventBus::get().publish(BlockPressedEvent{
 					worldPos,
 					sf::Mouse::Button::Left,
 					isRunning
-				});
-		}
+					});
+			}			
 
-		startPos = worldPos;
-		for (auto& block : blocks) {
-			if (block->isInBoundingBox(worldPos) && !isRunning) {
-				movingBlock = block;
-			}
-		}
-
-		if (!movingBlock && blocksViewRect.contains(sf::Vector2f(mouseButtonPressed.position)) && worldPos.x > blockStoreWidth && !isRunning) {
-			leftHold = true;
-		}
-
-		if (!isRunning) {
-			for (auto& block : blockStore) {
+			startPos = worldPos;
+			bool onBlock = false;
+			for (auto& block : blocks) {
 				if (block->isInBoundingBox(worldPos)) {
-					startPos = worldPos;
-					movingBlock = block->clone();
-					blocks.push_back(movingBlock);
+					onBlock = true;
+					if(!isRunning)
+						movingBlock = block;
 				}
 			}
+
+			if (!movingBlock && worldPos.x > blockStoreWidth && !onBlock) {
+				leftHold = true;
+			}
+
+			if (!isRunning) {
+				for (auto& block : blockStore) {
+					if (block->isInBoundingBox(worldPos)) {
+						startPos = worldPos;
+						movingBlock = block->clone();
+						blocks.push_back(movingBlock);
+					}
+				}
+			}
+			isSavedNow = false;
 		}
 	}
 }
 
 void BlockManager::onMouseButtonReleased(const sf::Event::MouseButtonReleased& mouseButtonReleased) {
-	if (mouseButtonReleased.button == sf::Mouse::Button::Left && !isRunning) {
-		leftHold = false;
+	leftHold = false;
+	if (mouseButtonReleased.button == sf::Mouse::Button::Left && !isRunning) {		
 		for (auto iter = blocks.begin(); iter != blocks.end();) {
 			Block* block = *iter;
 
 			if (block->pos.x + block->size.x < blockStoreWidth) {
 				iter = blocks.erase(iter);
 				delete block;
+				isSavedNow = false;
 				continue;
 			}
 			else {
 				iter++;
 			}
 			if (block->blockInteract(movingBlock)) {
+				isSavedNow = false;
 				break;
 			}
 		}
@@ -202,26 +213,27 @@ void BlockManager::onMouseButtonReleased(const sf::Event::MouseButtonReleased& m
 
 void BlockManager::onMouseMoved(const sf::Event::MouseMoved& mouseMoved) {
 	sf::Vector2f worldPos = window->mapPixelToCoords(mouseMoved.position, *blocksView);
-	if (!isRunning) {
-		sf::FloatRect viewBounds({
+	sf::FloatRect viewBounds({
 			(*blocksView).getCenter().x - (*blocksView).getSize().x / 2,
 			(*blocksView).getCenter().y - (*blocksView).getSize().y / 2 },
-			{ (*blocksView).getSize().x, (*blocksView).getSize().y });
-
-		if (viewBounds.contains(worldPos)) {
+		{ (*blocksView).getSize().x, (*blocksView).getSize().y });
+	if (viewBounds.contains(worldPos)) {
+		if (!isRunning) {
 			if (movingBlock != nullptr) {
 				movingBlock->moveBy(worldPos - startPos);
 				startPos = worldPos;
+				isSavedNow = false;
 			}
-			else if (leftHold) {
-				for (Block* block : blocks) {
-					block->pos += worldPos - startPos;
-					if (block->pos.x < blockStoreWidth) {
-						block->pos.x = blockStoreWidth;
-					}
+		}
+		if (leftHold) {
+			for (Block* block : blocks) {
+				block->pos += worldPos - startPos;
+				if (block->pos.x < blockStoreWidth) {
+					block->pos.x = blockStoreWidth;
 				}
-				startPos = worldPos;
 			}
-		}		
+			startPos = worldPos;
+			isSavedNow = false;
+		}
 	}
 }

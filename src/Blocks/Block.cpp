@@ -19,7 +19,7 @@ bool Block::blockInteract(Block* other, bool disconneting)
     if (other == this) return false;
     if (other == nullptr) return false;
 
-    if (nextBlock == other && disconneting) {
+    if (nextBlock == other && disconneting && (pos.x - other->pos.x != 0 && pos.y + size.y - other->pos.y != 0)) {
         if (other->prevBlock) {
             other->prevBlock->nextBlock = nullptr;
             other->prevBlock = nullptr;
@@ -47,15 +47,14 @@ bool Block::blockInteract(Block* other, bool disconneting)
     return false;
 }
 
-sf::Time Block::update(Car& car, sf::Time elapsed)
+void Block::update(Car& car, sf::Time dt)
 {
-    if (elapsed < timeToWork) {
-        activate(car);
-        return sf::seconds(0);
+    elapsedTime += dt;
+    if (elapsedTime < timeToWork) {
+        activate(car);     
     }
     else {
         deactivate(car);
-        return timeToWork;
     }
 }
 
@@ -66,15 +65,19 @@ Block* Block::getNext()
 
 void Block::activate(Car& car)
 {
-    isRunning = true;
-    for (int i = 0; i < outline.getVertexCount(); i++) {
-        outline[i].color = sf::Color::Blue;
-    }
+    if (!isRunning) {
+        isRunning = true;
+        elapsedTime = sf::seconds(0);
+        for (int i = 0; i < outline.getVertexCount(); i++) {
+            outline[i].color = sf::Color::Blue;
+        }
+    }    
 }
 
 void Block::deactivate(Car& car)
 {
     isRunning = false;
+    elapsedTime = sf::seconds(0);
     for (int i = 0; i < outline.getVertexCount(); i++) {
         outline[i].color = sf::Color::White;
     }

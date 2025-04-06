@@ -50,14 +50,18 @@ void DecelerationBlock::render()
 
 void DecelerationBlock::activate(Car& car)
 {
-    Block::activate(car);
-    car.decelerate(true);
+    if (!isRunning) {
+        Block::activate(car);
+        car.decelerate(true);
+    }    
 }
 
 void DecelerationBlock::deactivate(Car& car)
 {
-    Block::deactivate(car);
-    car.decelerate(false);
+    if (isRunning) {
+        Block::deactivate(car);
+        car.decelerate(false);
+    }    
 }
 
 std::string DecelerationBlock::name()

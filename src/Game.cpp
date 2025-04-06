@@ -6,7 +6,9 @@ Game::Game() :
 	level(".\\assets\\maps\\level1.json", &window, &car),
 	popup(window),
 	blockManager(&window, &car, &blocksView),
-	menu(&window, 30)
+	menu(&window, 30),
+	font(".\\assets\\fonts\\Share-Tech-CYR.otf"),
+	raceTimeText(font)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 	
@@ -45,12 +47,14 @@ void Game::setupEventListeners() {
 	EventBus::get().subscribe<sf::Event::KeyPressed>(this, &Game::onKeyPressed);
 	EventBus::get().subscribe<sf::Event::Resized>(this, &Game::onWindowResized);
 	EventBus::get().subscribe<StopSimulationEvent>(this, &Game::onSimulationStop);
+	EventBus::get().subscribe<StartSimulationEvent>(this, &Game::onSimulationStart);
 	EventBus::get().subscribe<sf::Event::Closed>(this, &Game::onWindowClosed);
 	EventBus::get().subscribe<CarAccidentEvent>(this, &Game::onCarAccident);
 	EventBus::get().subscribe<SaveFileEvent>(this, &Game::onSaveFile);
 	EventBus::get().subscribe<LoadFileEvent>(this, &Game::onLoadFile);
 	EventBus::get().subscribe<ExitEvent>(this, &Game::onExit);
 	EventBus::get().subscribe<sf::Event::MouseMoved>(this, &Game::onMouseMoved);
+	EventBus::get().subscribe<RaceFinishedEvent>(this, &Game::onRaceFinish);
 }
 
 void Game::handleEvents() {
@@ -99,8 +103,28 @@ void Game::onWindowResized(const sf::Event::Resized&) {
 
 void Game::onSimulationStop(const StopSimulationEvent& event)
 {
-	level.reset();
 	blockManager.reset();
+	level.reset();
+	isRaceOn = false;
+}
+
+void Game::onSimulationStart(const StartSimulationEvent& event)
+{
+	timeAccumulator = sf::seconds(0);
+	raceTime = sf::seconds(0);
+	isRaceOn = true;
+	blockManager.start(event.startBlock);
+}
+
+void Game::onRaceFinish(const RaceFinishedEvent& event)
+{
+	isRaceOn = false;
+	std::wstringstream wss;
+	wss << L"Трасса завершена. Время: " << raceTime.asSeconds();
+	EventBus::get().publish<StopSimulationEvent>(StopSimulationEvent{});
+	popup.show(L"Ура!", wss.str(),
+		{ L"Продолжить" },
+		[this](int option) {});
 }
 
 void Game::onCarAccident(const CarAccidentEvent& event)
@@ -125,6 +149,10 @@ void Game::onLoadFile(const LoadFileEvent& event)
 
 void Game::onExit(const ExitEvent& event)
 {
+	if (blockManager.isSaved()) {
+		window.close();
+		return;
+	}
 	popup.show(L"Подтверждение выхода", L"Сохранить изменения?",
 		{ L"Сохранить", L"Не сохранять", L"Отмена" },
 		[this](int option) {
@@ -160,14 +188,32 @@ void Game::render()
 	window.setView(appView);
 	menu.render();
 	popup.render();
+	renderTime();
 
     window.display();
+}
+
+void Game::renderTime()
+{
+	std::wstringstream wss;
+	wss << L"Время: " << std::setprecision(2) << std::fixed << raceTime.asSeconds();
+	raceTimeText.setString(wss.str());
+	raceTimeText.setPosition({ window.getSize().x - 200.0f, menu.height });
+	window.draw(raceTimeText);
 }
 
 void Game::update()
 {
 	sf::Time dt = clock.restart();
-	blockManager.update(dt);
-	car.update(dt);
-	level.update();
+	timeAccumulator += dt;
+	if (isRaceOn) {
+		raceTime += dt;
+	}
+
+	while (timeAccumulator >= deltaTime) {
+		blockManager.update(deltaTime);
+		car.update(deltaTime);
+		level.update();
+		timeAccumulator -= deltaTime;
+	}	
 }

@@ -19,21 +19,10 @@ void Car::reset(sf::Vector2f defaultPos, sf::Angle defaultDir)
     directionDelta = sf::degrees(0);
 }
 
-void Car::update(sf::Time elapsed) {
-    const float fixed_dt = 1.0f / 60.0f;
-    float dt = elapsed.asSeconds() * 10;
-    while (dt > fixed_dt) {
-        updatePhysics(fixed_dt);
-        dt -= fixed_dt;
-    }
-    if (dt > 0) {
-        updatePhysics(dt);
-    }
-}
-
-void Car::updatePhysics(float dt) {
+void Car::update(sf::Time deltaTime) {
+    double dt = deltaTime.asSeconds() * 10;
     if (acceleration) {
-        speed += 0.1;
+        speed += 3 * dt;
     }
     if (abs(speed) > maxSpeed) {
         speed = abs(speed) / speed * maxSpeed;
@@ -44,7 +33,6 @@ void Car::updatePhysics(float dt) {
     if (std::abs(speed) < 0.05f) {
         speed = 0.0f;
     }
-
     if (abs(speed) > 2) {
         direction += directionDelta * dt;
     }    
@@ -69,7 +57,7 @@ void Car::decelerate(bool state)
 
 void Car::setDirection(sf::Angle _dir)
 {
-    directionDelta = _dir;
+    directionDelta += _dir;
 }
 
 const sf::Transform& Car::getTransform() const

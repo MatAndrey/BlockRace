@@ -44,21 +44,13 @@ StartBlock::StartBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::View* vi
 }
 
 StartBlock::~StartBlock() {
-
+    EventBus::get().unsubscribe<BlockPressedEvent>(this);
+    EventBus::get().unsubscribe<DisableBlocksEvent>(this);
 }
 
 StartBlock* StartBlock::clone()
 {
     return new StartBlock(pos, window, view);
-}
-
-Block* StartBlock::update(Car& car) {
-    if (nextBlock != nullptr) {
-        return nextBlock;
-    }
-    else {
-        return nullptr;
-    }
 }
 
 std::string StartBlock::name()

@@ -148,39 +148,29 @@ TimerBlock* TimerBlock::clone()
     return new TimerBlock(pos, window, view, size.y, getDuration());
 }
 
-
-sf::Time TimerBlock::update(Car& car, sf::Time elapsed)
-{
-    if (elapsed < timeToWork) {
-        if(!isRunning)
-            activate(car);
-        return sf::seconds(0);
-    }
-    else {
-        deactivate(car);
-        return timeToWork;
-    }
-}
-
 void TimerBlock::activate(Car& car)
 {
-    updateDuration();
-    Block::activate(car);
-    Block* nextInner = innerNextBlock;
-    while (nextInner) {
-        nextInner->activate(car);
-        nextInner = nextInner->getNext();
-    }
+    if (!isRunning) {
+        updateDuration();
+        Block::activate(car);
+        Block* nextInner = innerNextBlock;
+        while (nextInner) {
+            nextInner->activate(car);
+            nextInner = nextInner->getNext();
+        }
+    }    
 }
 
 void TimerBlock::deactivate(Car& car)
 {
-    Block::deactivate(car);
-    Block* nextInner = innerNextBlock;
-    while (nextInner) {
-        nextInner->deactivate(car);
-        nextInner = nextInner->getNext();
-    }
+    if (isRunning) {
+        Block::deactivate(car);
+        Block* nextInner = innerNextBlock;
+        while (nextInner) {
+            nextInner->deactivate(car);
+            nextInner = nextInner->getNext();
+        }
+    }    
 }
 
 bool TimerBlock::isInBoundingBox(sf::Vector2f point) {
