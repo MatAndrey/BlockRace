@@ -48,3 +48,4 @@ bool StartButton::isMouseOver(sf::Vector2f mousePos)
 	sf::FloatRect bounds( pos, { 20, 20 });
 	return bounds.contains(mousePos);
 }
+
