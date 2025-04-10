@@ -85,28 +85,27 @@ void Level::updateCheckPoint()
     }
 }
 
-Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
-	car(car), window(window), mapTexture(), mapSprite(mapTexture)
+void Level::loadDataFromFile(const std::string& path)
 {
-	std::ifstream file(path);
-	jsonData = json::parse(file);
+    std::ifstream file(path);
+    jsonData = json::parse(file);
 
-	if (mapTexture.loadFromFile(jsonData["mapTexturePath"].get<std::string>())) {
-		mapSprite.setTexture(mapTexture);
-		mapSprite.setTextureRect({ {0 , 0 }, sf::Vector2i(mapTexture.getSize()) });
-	}
-	
-	carInitPos = sf::Vector2f(jsonData["carInitX"], jsonData["carInitY"]);
-	carInitDir = sf::degrees(jsonData["carInitDir"]);
+    if (mapTexture.loadFromFile(jsonData["mapTexturePath"].get<std::string>())) {
+        mapSprite.setTexture(mapTexture);
+        mapSprite.setTextureRect({ {0 , 0 }, sf::Vector2i(mapTexture.getSize()) });
+    }
+
+    carInitPos = sf::Vector2f(jsonData["carInitX"], jsonData["carInitY"]);
+    carInitDir = sf::degrees(jsonData["carInitDir"]);
 
 
-	for (const auto& border : jsonData["mapBorders"]) {
-		std::vector<sf::Vector2f> vertexes;
-		for (const auto& borderVertex : border) {
-			vertexes.push_back({ borderVertex[0], borderVertex[1] });
-		}
-		roadBorders.push_back(vertexes);
-	}
+    for (const auto& border : jsonData["mapBorders"]) {
+        std::vector<sf::Vector2f> vertexes;
+        for (const auto& borderVertex : border) {
+            vertexes.push_back({ borderVertex[0], borderVertex[1] });
+        }
+        roadBorders.push_back(vertexes);
+    }
 
     checkpointRadius = jsonData["checkpointRadius"].get<float>();
 
@@ -120,9 +119,85 @@ Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
         s.setOutlineThickness(1);
         checkpoints.push_back(s);
     }
-    updateCheckPoint();
+}
 
+void Level::handleCheatRace(const CheatRaceEvent& event)
+{
+    if (raceMode) {
+        raceMode = false;
+        EventBus::get().unsubscribe<sf::Event::KeyPressed>(this);
+        EventBus::get().unsubscribe<sf::Event::KeyReleased>(this);
+    }
+    else {
+        raceMode = true;
+        EventBus::get().subscribe<sf::Event::KeyPressed>(this, &Level::handleKeyPressed);
+        EventBus::get().subscribe<sf::Event::KeyReleased>(this, &Level::handleKeyReleased);
+    }
+}
+
+void Level::handleCheatShowBorders(const CheatShowBordersEvent& event)
+{
+    isBordersVisible = !isBordersVisible;
+}
+
+void Level::handleCheatNoBorders(const CheatNoBordersEvent& event)
+{
+    noBorders = !noBorders;
+}
+
+void Level::handleKeyPressed(const sf::Event::KeyPressed& event)
+{
+    if (event.code == sf::Keyboard::Key::W) {
+        car->accelerate(true);
+    }
+    if (event.code == sf::Keyboard::Key::A) {
+        car->setDirection(sf::degrees(-5));
+    }
+    if (event.code == sf::Keyboard::Key::S) {
+        car->decelerate(true);
+    }
+    if (event.code == sf::Keyboard::Key::D) {
+        car->setDirection(sf::degrees(5));
+    }
+}
+
+void Level::handleKeyReleased(const sf::Event::KeyReleased& event)
+{
+    if (event.code == sf::Keyboard::Key::W) {
+        car->accelerate(false);
+    }
+    if (event.code == sf::Keyboard::Key::A) {
+        car->setDirection(sf::degrees(5));
+    }
+    if (event.code == sf::Keyboard::Key::S) {
+        car->decelerate(false);
+    }
+    if (event.code == sf::Keyboard::Key::D) {
+        car->setDirection(sf::degrees(-5));
+    }
+}
+
+Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
+	car(car), window(window), mapTexture(), mapSprite(mapTexture)
+{
+    loadDataFromFile(path);
+    updateCheckPoint();
 	reset();
+
+    for (const auto& border : roadBorders) {
+        sf::VertexArray line(sf::PrimitiveType::LineStrip);
+        for (const auto& point : border) {
+            sf::Vertex v;
+            v.position = point;
+            v.color = sf::Color::Red;
+            line.append(v);
+        }
+        borderLines.push_back(line);
+    }
+
+    EventBus::get().subscribe<CheatRaceEvent>(this, &Level::handleCheatRace);
+    EventBus::get().subscribe<CheatShowBordersEvent>(this, &Level::handleCheatShowBorders);
+    EventBus::get().subscribe<CheatNoBordersEvent>(this, &Level::handleCheatNoBorders);
 }
 
 void Level::render(sf::View& view, float alpha)
@@ -133,21 +208,15 @@ void Level::render(sf::View& view, float alpha)
     window->draw(checkpoints[currCheckpoint]);
     car->render(interpolatedPos);
     
-    //for (const auto& border : roadBorders) {
-    //    sf::VertexArray lines(sf::PrimitiveType::LineStrip);
-    //    for (const auto& point : border) {
-    //        sf::Vertex v;
-    //        v.position = point;
-    //        v.color = sf::Color::Red;
-    //        lines.append(v);
-    //    }
-    //    window->draw(lines);
-    //}  
+    if(isBordersVisible)
+        for (const auto& line : borderLines) {
+            window->draw(line);
+        }  
 }
 
 void Level::update()
 {
-    if (checkCollision()) {
+    if (checkCollision() && !noBorders) {
         EventBus::get().publish<CarAccidentEvent>(CarAccidentEvent{});
     }
     updateCheckPoint();

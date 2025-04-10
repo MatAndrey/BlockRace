@@ -11,6 +11,7 @@ Game::Game() :
 	raceTimeText(font)
 {  
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
+	window.setKeyRepeatEnabled(false);
 	
 	sf::WindowHandle hwnd = window.getNativeHandle();
 	ShowWindow(hwnd, SW_SHOWMAXIMIZED);

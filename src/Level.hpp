@@ -24,6 +24,17 @@ class Level {
     sf::Angle carInitDir;
     bool checkCollision();
     void updateCheckPoint();
+    void loadDataFromFile(const std::string& path);
+
+    std::vector<sf::VertexArray> borderLines;
+    bool isBordersVisible = false;
+    bool raceMode = false;
+    bool noBorders = false;
+    void handleCheatRace(const CheatRaceEvent& event);
+    void handleCheatShowBorders(const CheatShowBordersEvent& event);
+    void handleCheatNoBorders(const CheatNoBordersEvent& event);
+    void handleKeyPressed(const sf::Event::KeyPressed& event);
+    void handleKeyReleased(const sf::Event::KeyReleased& event);
 public:
     Level(const std::string& path, sf::RenderWindow* window, Car* car);
 

@@ -1,4 +1,5 @@
 #pragma once
+#include "SFML/Graphics.hpp"
 
 class StartBlock;
 
@@ -34,3 +35,9 @@ struct LoadFileEvent {
 struct ExitEvent {};
 
 struct RaceFinishedEvent {};
+
+struct CheatRaceEvent {};
+
+struct CheatShowBordersEvent {};
+
+struct CheatNoBordersEvent {};
