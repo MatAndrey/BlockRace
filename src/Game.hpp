@@ -7,6 +7,7 @@
 #include "BlockManager.hpp"
 #include "UI/Menu.hpp"
 #include "UI/UIElement.hpp"
+#include "Cheats.hpp"
 
 class Game {
 	Car car;
@@ -49,6 +50,8 @@ class Game {
 	void onSaveFile(const SaveFileEvent& event);
 	void onLoadFile(const LoadFileEvent& event);
 	void onExit(const ExitEvent& event);
+
+	Cheats cheats;
 public:
 	Game();
 	void loop();
