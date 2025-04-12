@@ -13,8 +13,8 @@ BlockManager::BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksV
 	blockStore.push_back(new TimerBlock(sf::Vector2f(0, 0), window, blocksView));
 	blockStore.push_back(new AccelerationBlock(sf::Vector2f(0, 0), window));
 	blockStore.push_back(new DecelerationBlock(sf::Vector2f(0, 0), window));
-	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(5)));
-	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(-5)));
+	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(15)));
+	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(-15)));
 
 	float y = 10;
 	for (auto block : blockStore) {

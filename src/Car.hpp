@@ -9,8 +9,7 @@ class Car : public Entity
 	float speed;
 	
 	sf::Angle directionDelta;
-	const float maxSpeed = 300;
-	const float friction = 0.1;
+	const float maxSpeed = 100;
 
 	sf::Texture texture;
 	sf::Sprite sprite;

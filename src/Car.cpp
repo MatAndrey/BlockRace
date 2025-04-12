@@ -22,13 +22,30 @@ void Car::update(sf::Time deltaTime) {
     prevPos = pos;
     double dt = deltaTime.asSeconds() * 10;
     if (acceleration) {
-        speed += 3 * dt;
+        speed += 5 * dt;
+    }
+    if (std::abs(speed) > 0) {
+        double delta = (deceleration ? 15 : 2) * dt;
+        if (speed > 0) {
+            if (speed - delta > 0) {
+                speed -= delta;
+            }
+            else {
+                speed = 0;
+            }
+        }
+        else {
+            if (speed + delta < 0) {
+                speed += delta;
+            }
+            else {
+                speed = 0;
+            }
+        }
     }
     if (abs(speed) > maxSpeed) {
         speed = abs(speed) / speed * maxSpeed;
-    }
-    speed *= std::exp(-friction * dt * (deceleration ? 8 : 1));
- 
+    } 
 
     if (std::abs(speed) < 0.05f) {
         speed = 0.0f;
