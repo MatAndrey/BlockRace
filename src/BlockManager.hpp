@@ -5,6 +5,7 @@
 #include "Blocks/DecelerationBlock.hpp"
 #include "Blocks/RotationBlock.hpp"
 #include "Blocks/MoveToBlock.hpp"
+#include "Blocks/ConstSpeedBlock.hpp"
 #include <list>
 #include <fstream>
 

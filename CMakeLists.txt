@@ -39,7 +39,7 @@ add_executable(BlockRace
     "src/UI/Menu.cpp" 
     "src/FileDialog.cpp" 
     "src/UI/UIElement.cpp"
-    "src/Cheats.cpp" "src/Blocks/MoveToBlock.cpp")
+    "src/Cheats.cpp" "src/Blocks/MoveToBlock.cpp" "src/Blocks/ConstSpeedBlock.cpp")
 
 # Добавление assets в билд
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})

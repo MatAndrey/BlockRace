@@ -16,6 +16,7 @@ BlockManager::BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksV
 	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(15)));
 	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(-15)));
 	blockStore.push_back(new MoveToBlock(sf::Vector2f(0, 0), window, blocksView));
+	blockStore.push_back(new ConstSpeedBlock(sf::Vector2f(0, 0), window, blocksView));
 
 	float y = 10;
 	for (auto block : blockStore) {
@@ -67,6 +68,10 @@ void BlockManager::saveToFile(std::wstring fileName)
 			MoveToBlock* mtb = dynamic_cast<MoveToBlock*>(block);
 			file << mtb->name() << "\t" << mtb->pos.x << "\t" << mtb->pos.y << "\t" << mtb->getTargetPos().x << "\t" << mtb->getTargetPos().y << "\n";
 		}
+		else if (block->name() == "ConstSpeedBlock") {
+			ConstSpeedBlock* csb = dynamic_cast<ConstSpeedBlock*>(block);
+			file << csb->name() << "\t" << csb->pos.x << "\t" << csb->pos.y << "\t" << csb->getTargetSpeed() << "\t" << "\n";
+		}
 		else {
 			file << block->name() << "\t" << block->pos.x << "\t" << block->pos.y << "\n";
 		}
@@ -112,6 +117,11 @@ void BlockManager::loadFromFile(std::wstring fileName)
 			sf::Vector2f targetPos;
 			file >> targetPos.x >> targetPos.y;
 			block = new MoveToBlock(pos, window, blocksView, targetPos);
+		}
+		else if (type == "ConstSpeedBlock") {
+			float targetSpeed;
+			file >> targetSpeed;
+			block = new ConstSpeedBlock(pos, window, blocksView, targetSpeed);
 		}
 		if (block) {
 			blocks.push_back(block);
