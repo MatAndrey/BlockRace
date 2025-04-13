@@ -227,9 +227,9 @@ void BlockManager::onMouseMoved(const sf::Event::MouseMoved& mouseMoved) {
 		}
 		if (leftHold) {
 			for (Block* block : blocks) {
-				block->pos += worldPos - startPos;
-				if (block->pos.x < blockStoreWidth) {
-					block->pos.x = blockStoreWidth;
+				sf::Vector2f delta = worldPos - startPos;
+				if (block->prevBlock == nullptr && block->pos.x + delta.x > blockStoreWidth) {
+					block->moveBy(delta);
 				}
 			}
 			startPos = worldPos;
