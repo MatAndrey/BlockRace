@@ -50,3 +50,4 @@ bool StartButton::contains(const sf::Vector2f& point) const
 	sf::FloatRect bounds(pos, { 20, 20 });
 	return bounds.contains(point);
 }
+
