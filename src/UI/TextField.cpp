@@ -55,7 +55,10 @@ void TextField::setText(const std::string& newText)
 {
     inputString = newText;
     text.setString(inputString);
-    while (text.getLocalBounds().size.x > size.x - 5 || inputString.back() == '0' || inputString.back() == '.') {
+    while (inputString.size() > 0 && 
+        (text.getLocalBounds().size.x > size.x - 5 || 
+            (inputString.back() == '0' && inputString.find('.') != std::string::npos) || 
+            inputString.back() == '.')) {
         inputString.pop_back();
         text.setString(inputString);
     }

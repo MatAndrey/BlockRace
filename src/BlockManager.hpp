@@ -4,6 +4,7 @@
 #include "Blocks/AccelerationBlock.hpp"
 #include "Blocks/DecelerationBlock.hpp"
 #include "Blocks/RotationBlock.hpp"
+#include "Blocks/MoveToBlock.hpp"
 #include <list>
 #include <fstream>
 
@@ -20,7 +21,7 @@ class BlockManager {
 	bool isRunning = false;
 	bool isSavedNow = true;
 
-	const float blockStoreWidth = 150;
+	const float blockStoreWidth = 170;
 
 	sf::RenderWindow* window;
 	sf::View* blocksView;

@@ -15,6 +15,7 @@ BlockManager::BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksV
 	blockStore.push_back(new DecelerationBlock(sf::Vector2f(0, 0), window));
 	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(15)));
 	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(-15)));
+	blockStore.push_back(new MoveToBlock(sf::Vector2f(0, 0), window, blocksView));
 
 	float y = 10;
 	for (auto block : blockStore) {
@@ -62,6 +63,10 @@ void BlockManager::saveToFile(std::wstring fileName)
 			TimerBlock* tb = dynamic_cast<TimerBlock*>(block);
 			file << tb->name() << "\t" << tb->pos.x << "\t" << tb->pos.y << "\t" << tb->size.y << "\t" << tb->getDuration() << "\n";
 		}
+		else if (block->name() == "MoveToBlock") {
+			MoveToBlock* mtb = dynamic_cast<MoveToBlock*>(block);
+			file << mtb->name() << "\t" << mtb->pos.x << "\t" << mtb->pos.y << "\t" << mtb->getTargetPos().x << "\t" << mtb->getTargetPos().y << "\n";
+		}
 		else {
 			file << block->name() << "\t" << block->pos.x << "\t" << block->pos.y << "\n";
 		}
@@ -102,6 +107,11 @@ void BlockManager::loadFromFile(std::wstring fileName)
 			float angle;
 			file >> angle;
 			block = new RotationBlock(pos, window, sf::degrees(angle));
+		}
+		else if (type == "MoveToBlock") {
+			sf::Vector2f targetPos;
+			file >> targetPos.x >> targetPos.y;
+			block = new MoveToBlock(pos, window, blocksView, targetPos);
 		}
 		if (block) {
 			blocks.push_back(block);

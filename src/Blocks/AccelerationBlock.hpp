@@ -12,7 +12,6 @@ public:
 	virtual AccelerationBlock* clone();
 	virtual void render();
 	virtual std::string name();
-	virtual bool handleEvent(sf::Event& event, sf::Vector2f mousePos);
 	virtual void activate(Car& car);
 	virtual void deactivate(Car& car);
 };

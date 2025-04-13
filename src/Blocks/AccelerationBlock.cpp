@@ -54,16 +54,12 @@ std::string AccelerationBlock::name()
     return "AccelerationBlock";
 }
 
-bool AccelerationBlock::handleEvent(sf::Event& event, sf::Vector2f mousePos)
-{
-    return false;
-}
-
 void AccelerationBlock::activate(Car& car)
 {
     if (!isRunning) {
         Block::activate(car);
         car.accelerate(true);
+        car.decelerate(false);
     }       
 }
 

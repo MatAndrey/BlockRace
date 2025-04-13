@@ -151,13 +151,13 @@ void Level::handleKeyPressed(const sf::Event::KeyPressed& event)
         car->accelerate(true);
     }
     if (event.code == sf::Keyboard::Key::A) {
-        car->setDirection(sf::degrees(-5));
+        car->setDirectionDelta(sf::degrees(-5));
     }
     if (event.code == sf::Keyboard::Key::S) {
         car->decelerate(true);
     }
     if (event.code == sf::Keyboard::Key::D) {
-        car->setDirection(sf::degrees(5));
+        car->setDirectionDelta(sf::degrees(5));
     }
 }
 
@@ -167,13 +167,13 @@ void Level::handleKeyReleased(const sf::Event::KeyReleased& event)
         car->accelerate(false);
     }
     if (event.code == sf::Keyboard::Key::A) {
-        car->setDirection(sf::degrees(5));
+        car->setDirectionDelta(sf::degrees(5));
     }
     if (event.code == sf::Keyboard::Key::S) {
         car->decelerate(false);
     }
     if (event.code == sf::Keyboard::Key::D) {
-        car->setDirection(sf::degrees(-5));
+        car->setDirectionDelta(sf::degrees(-5));
     }
 }
 

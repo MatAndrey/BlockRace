@@ -71,7 +71,7 @@ void RotationBlock::activate(Car& car)
 {
     if (!isRunning) {
         Block::activate(car);
-        car.setDirection(direction);
+        car.setDirectionDelta(direction);
     }    
 }
 
@@ -79,6 +79,6 @@ void RotationBlock::deactivate(Car& car)
 {
     if (isRunning) {
         Block::deactivate(car);
-        car.setDirection(-direction);
+        car.setDirectionDelta(sf::degrees(0));
     }    
 }

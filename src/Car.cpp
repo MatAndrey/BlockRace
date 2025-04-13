@@ -43,6 +43,9 @@ void Car::update(sf::Time deltaTime) {
             }
         }
     }
+    if (abs(speed) > speedLimit && speedLimit > -1) {
+        speed = abs(speed) / speed * speedLimit;
+    }
     if (abs(speed) > maxSpeed) {
         speed = abs(speed) / speed * maxSpeed;
     } 
@@ -72,9 +75,28 @@ void Car::decelerate(bool state)
     deceleration = state;
 }
 
-void Car::setDirection(sf::Angle _dir)
+void Car::setDirectionDelta(sf::Angle _dir)
 {
-    directionDelta += _dir;
+    float degrees = _dir.asDegrees();
+    if (degrees > maxDirDeltaDeg) {
+        directionDelta = sf::degrees(maxDirDeltaDeg);
+    }
+    else if (degrees < -maxDirDeltaDeg) {
+        directionDelta = sf::degrees(-maxDirDeltaDeg);
+    }
+    else {
+        directionDelta = _dir;
+    }
+}
+
+sf::Angle Car::getDirectionDelta()
+{
+    return directionDelta;
+}
+
+void Car::setSpeedLimit(float newLimit)
+{
+    speedLimit = newLimit;
 }
 
 const sf::Transform& Car::getTransform() const

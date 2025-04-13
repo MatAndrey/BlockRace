@@ -153,12 +153,12 @@ void TimerBlock::activate(Car& car)
     if (!isRunning) {
         updateDuration();
         Block::activate(car);
-        Block* nextInner = innerNextBlock;
-        while (nextInner) {
-            nextInner->activate(car);
-            nextInner = nextInner->getNext();
-        }
     }    
+    Block* nextInner = innerNextBlock;
+    while (nextInner) {
+        nextInner->activate(car);
+        nextInner = nextInner->getNext();
+    }
 }
 
 void TimerBlock::deactivate(Car& car)
