@@ -13,8 +13,8 @@ BlockManager::BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksV
 	blockStore.push_back(new TimerBlock(sf::Vector2f(0, 0), window, blocksView));
 	blockStore.push_back(new AccelerationBlock(sf::Vector2f(0, 0), window));
 	blockStore.push_back(new DecelerationBlock(sf::Vector2f(0, 0), window));
-	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(15)));
-	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, sf::degrees(-15)));
+	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, blocksView, sf::degrees(15)));
+	blockStore.push_back(new RotationBlock(sf::Vector2f(0, 0), window, blocksView, sf::degrees(-15)));
 	blockStore.push_back(new MoveToBlock(sf::Vector2f(0, 0), window, blocksView));
 	blockStore.push_back(new ConstSpeedBlock(sf::Vector2f(0, 0), window, blocksView));
 
@@ -111,7 +111,7 @@ void BlockManager::loadFromFile(std::wstring fileName)
 		else if (type == "RotationBlock") {
 			float angle;
 			file >> angle;
-			block = new RotationBlock(pos, window, sf::degrees(angle));
+			block = new RotationBlock(pos, window, blocksView, sf::degrees(angle));
 		}
 		else if (type == "MoveToBlock") {
 			sf::Vector2f targetPos;

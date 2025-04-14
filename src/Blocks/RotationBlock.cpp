@@ -1,8 +1,12 @@
 #include "RotationBlock.hpp"
 
-RotationBlock::RotationBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::Angle _dir) :
-    Block(_pos, { 120, 30 }, window), direction(_dir), shape1({ 20, 30 }), shape2({ 25, 30 }), shape3({ 75, 30 })
+RotationBlock::RotationBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::View* view, sf::Angle _dir) :
+    Block(_pos, { 120, 30 }, window), direction(_dir), shape1({ 20, 30 }), shape2({ 25, 30 }), shape3({ 75, 30 }),
+    view(view), field(pos, window, { 27, 16 })
 {
+    field.setView(view);
+    field.setText(std::to_string(direction.asDegrees()));
+
     shape1.setFillColor(sf::Color(44, 71, 122));
 
     shape2.setFillColor(sf::Color(44, 71, 122));
@@ -11,16 +15,7 @@ RotationBlock::RotationBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::An
     shape3.setFillColor(sf::Color(44, 71, 122));
     shape3.setPosition(sf::Vector2f(45, 0));
 
-    if (direction == sf::degrees(0)) {
-        text.setString(L"Прямо");
-    }
-    else if (direction > sf::degrees(0)) {
-        text.setString(L"Направо");
-    }
-    else {
-        text.setString(L"Налево");
-    }
-    
+    text.setString(L"Повернуть на");
     text.setCharacterSize(14);
     text.setPosition(sf::Vector2f{ 5, 8 });
 
@@ -41,12 +36,13 @@ RotationBlock::~RotationBlock()
 
 float RotationBlock::getAngle()
 {
+    updateDirection();
     return direction.asDegrees();
 }
 
 RotationBlock* RotationBlock::clone()
 {
-    return new RotationBlock(pos, window, direction);
+    return new RotationBlock(pos, window, view, direction);
 }
 
 void RotationBlock::render()
@@ -60,6 +56,9 @@ void RotationBlock::render()
     window->draw(outline, transform);
 
     window->draw(text, transform);
+
+    field.pos = pos + sf::Vector2f{ 88, 7 };
+    field.render();
 }
 
 std::string RotationBlock::name()
@@ -70,6 +69,7 @@ std::string RotationBlock::name()
 void RotationBlock::activate(Car& car)
 {
     if (!isRunning) {
+        updateDirection();
         Block::activate(car);
         car.setDirectionDelta(direction);
     }    
@@ -81,4 +81,15 @@ void RotationBlock::deactivate(Car& car)
         Block::deactivate(car);
         car.setDirectionDelta(sf::degrees(0));
     }    
+}
+
+void RotationBlock::updateDirection()
+{
+    try {
+        direction = sf::degrees(std::stof(field.getText()));
+    }
+    catch (...) {
+        direction = sf::degrees(0);
+        field.setText("0");
+    }
 }
