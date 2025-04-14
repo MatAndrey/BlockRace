@@ -167,13 +167,13 @@ void Level::handleKeyReleased(const sf::Event::KeyReleased& event)
         car->accelerate(false);
     }
     if (event.code == sf::Keyboard::Key::A) {
-        car->setDirectionDelta(sf::degrees(5));
+        car->setDirectionDelta(sf::degrees(0));
     }
     if (event.code == sf::Keyboard::Key::S) {
         car->decelerate(false);
     }
     if (event.code == sf::Keyboard::Key::D) {
-        car->setDirectionDelta(sf::degrees(-5));
+        car->setDirectionDelta(sf::degrees(0));
     }
 }
 
@@ -203,7 +203,16 @@ Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
 void Level::render(sf::View& view, float alpha)
 {
     sf::Vector2f interpolatedPos = car->prevPos + alpha * (car->pos - car->prevPos);
-    view.setCenter(interpolatedPos);
+    sf::Vector2f cameraPos = interpolatedPos;
+    if (mapSprite.getGlobalBounds().contains(interpolatedPos)) {
+        cameraPos.x = std::clamp(interpolatedPos.x,
+            view.getSize().x / 2,
+            mapSprite.getLocalBounds().size.x - view.getSize().x / 2);
+        cameraPos.y = std::clamp(interpolatedPos.y,
+            view.getSize().y / 2,
+            mapSprite.getLocalBounds().size.y - view.getSize().y / 2);
+    }    
+    view.setCenter(cameraPos);
 	window->draw(mapSprite);
     window->draw(checkpoints[currCheckpoint]);
     car->render(interpolatedPos);
