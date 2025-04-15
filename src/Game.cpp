@@ -2,17 +2,18 @@
 #include <iostream>
 
 Game::Game() :
-	car({ 10, 10 }, &window),
+	car({ 10, 10 }, & window),
 	level(".\\assets\\maps\\level1.json", &window, &car),
 	popup(window),
 	blockManager(&window, &car, &blocksView),
 	menu(&window, 30),
 	font(".\\assets\\fonts\\Share-Tech-CYR.otf"),
-	raceTimeText(font)
-{  
+	raceTimeText(font),
+	mouseCoordinates(font)
+{
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 	window.setKeyRepeatEnabled(false);
-	
+
 	sf::WindowHandle hwnd = window.getNativeHandle();
 	ShowWindow(hwnd, SW_SHOWMAXIMIZED);
 
@@ -28,8 +29,11 @@ Game::Game() :
 	raceView.setCenter({ 0.75f * windowSize.x / 2, workAreaHeight / 2 });
 
 	blocksView.setViewport(sf::FloatRect({ 0, menu.height / windowSize.y }, { 0.25f, workAreaHeight / windowSize.y }));
-	blocksView.setSize({0.25f * windowSize.x, workAreaHeight });
-	blocksView.setCenter({0.25f * windowSize.x / 2, workAreaHeight / 2 });
+	blocksView.setSize({ 0.25f * windowSize.x, workAreaHeight });
+	blocksView.setCenter({ 0.25f * windowSize.x / 2, workAreaHeight / 2 });
+
+	mouseCoordinates.setPosition({raceView.getViewport().position.x * windowSize.x,
+		raceView.getViewport().position.y * windowSize.y});
 
 	setupEventListeners();
 }
@@ -83,6 +87,18 @@ void Game::onMouseMoved(const sf::Event::MouseMoved& event)
 		elem->updateHoverState(event.position);
 	}
 	UIElement::updateCursor(window);
+
+	sf::FloatRect raceBorders{ {raceView.getViewport().position.x * window.getSize().x,
+		raceView.getViewport().position.y * window.getSize().y}, raceView.getSize()};
+	if (raceBorders.contains(sf::Vector2f(event.position))) {
+		sf::Vector2f pos = window.mapPixelToCoords(event.position, raceView);
+		std::wstringstream wss;
+		wss << "X: " << pos.x << " Y: " << pos.y;
+		mouseCoordinates.setString(wss.str());
+	}
+	else {
+		mouseCoordinates.setString("");
+	}
 }
 
 void Game::onWindowResized(const sf::Event::Resized&) {
@@ -188,8 +204,9 @@ void Game::render()
 
 	window.setView(appView);
 	menu.render();
-	popup.render();
 	renderTime();
+	window.draw(mouseCoordinates);
+	popup.render();
 
     window.display();
 }

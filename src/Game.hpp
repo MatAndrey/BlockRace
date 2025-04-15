@@ -29,6 +29,7 @@ class Game {
 	bool isRaceOn = false;
 	sf::Font font;
 	sf::Text raceTimeText;
+	sf::Text mouseCoordinates;
 
 	const unsigned initWidth = 1920;
 	const unsigned initHeight = 1080;
