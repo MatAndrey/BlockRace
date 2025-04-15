@@ -35,10 +35,13 @@ MoveToBlock::MoveToBlock(sf::Vector2f _pos, sf::RenderWindow* window, sf::View* 
         outline[i].position = vertexes[i];
         outline[i].color = sf::Color::White;
     }
+
+    EventBus::get().subscribe<SetTargetEvent>(this, &MoveToBlock::onSetTarget);
 }
 
 MoveToBlock::~MoveToBlock()
 {
+    EventBus::get().unsubscribe<SetTargetEvent>(this);
 }
 
 MoveToBlock* MoveToBlock::clone()
@@ -130,4 +133,13 @@ sf::Vector2f MoveToBlock::getTargetPos()
 {
     updateTarget();
     return targetPos;
+}
+
+void MoveToBlock::onSetTarget(const SetTargetEvent& event)
+{
+    if (isInBoundingBox(event.eventPos)) {
+        targetPos = event.targetPos;
+        fieldX.setText(std::to_string(targetPos.x));
+        fieldY.setText(std::to_string(targetPos.y));
+    }    
 }

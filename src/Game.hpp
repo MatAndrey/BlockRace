@@ -34,6 +34,9 @@ class Game {
 	const unsigned initWidth = 1920;
 	const unsigned initHeight = 1080;
 
+	sf::Vector2f targetPos;
+	bool isTargetSaved = false;
+
 	void update();
 	void render();
 	void renderTime();
@@ -42,6 +45,7 @@ class Game {
 	void handleEvents();
 	void onKeyPressed(const sf::Event::KeyPressed& event);
 	void onMouseMoved(const sf::Event::MouseMoved& event);
+	void onMousePressed(const sf::Event::MouseButtonPressed& event);
 	void onWindowResized(const sf::Event::Resized& event);
 	void onWindowClosed(const sf::Event::Closed& event);
 	void onSimulationStop(const StopSimulationEvent& event);

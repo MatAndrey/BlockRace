@@ -36,6 +36,11 @@ struct ExitEvent {};
 
 struct RaceFinishedEvent {};
 
+struct SetTargetEvent {
+    sf::Vector2f targetPos;
+    sf::Vector2f eventPos;
+};
+
 struct CheatRaceEvent {};
 
 struct CheatShowBordersEvent {};

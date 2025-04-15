@@ -22,4 +22,5 @@ public:
 	virtual void deactivate(Car& car);
 	void updateTarget();
 	sf::Vector2f getTargetPos();
+	void onSetTarget(const SetTargetEvent& event);
 };
