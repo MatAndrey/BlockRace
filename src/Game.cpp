@@ -3,7 +3,7 @@
 
 Game::Game() :
 	car({ 10, 10 }, & window),
-	level(".\\assets\\maps\\level1.json", &window, &car),
+	level(".\\assets\\maps\\level1.json", &window, &car, &raceView),
 	popup(window),
 	blockManager(&window, &car, &blocksView),
 	menu(&window, 30),
@@ -36,6 +36,10 @@ Game::Game() :
 		raceView.getViewport().position.y * windowSize.y});
 
 	setupEventListeners();
+
+	level.setupCameraPos();
+
+	EventBus::get().publish<LoadFileEvent>(LoadFileEvent{ L"save.dat" });
 }
 
 void Game::loop()  
@@ -92,37 +96,32 @@ void Game::onMouseMoved(const sf::Event::MouseMoved& event)
 	sf::FloatRect raceBorders{ {raceView.getViewport().position.x * window.getSize().x,
 		raceView.getViewport().position.y * window.getSize().y}, raceView.getSize()};
 
-	std::wstringstream wss;
 	if (raceBorders.contains(sf::Vector2f(event.position))) {
-		sf::Vector2f pos = window.mapPixelToCoords(event.position, raceView);
-		wss << "X: " << pos.x << " Y: " << pos.y;
+		mousePos = window.mapPixelToCoords(event.position, raceView);
+		isMouseOverRace = true;
 	}
 	else {
-		mouseCoordinates.setString("");
+		isMouseOverRace = false;
 	}
-	if (isTargetSaved) {
-		wss << L"\nСохранено X: " << targetPos.x << " Y: " << targetPos.y;
-	}
-
-	mouseCoordinates.setString(wss.str());
 }
 
 void Game::onMousePressed(const sf::Event::MouseButtonPressed& event)
 {
-	if (event.button == sf::Mouse::Button::Left) {
+	if (event.button == sf::Mouse::Button::Right) {
 		sf::FloatRect raceBorders{ {raceView.getViewport().position.x * window.getSize().x,
-		raceView.getViewport().position.y * window.getSize().y}, raceView.getSize() };
+			raceView.getViewport().position.y * window.getSize().y}, raceView.getSize() };
 		if (raceBorders.contains(sf::Vector2f(event.position))) {
 			targetPos = window.mapPixelToCoords(event.position, raceView);
 			isTargetSaved = true;
 		}
-	} else if (event.button == sf::Mouse::Button::Right && isTargetSaved) {
-		sf::FloatRect blocksBorders { {blocksView.getViewport().position.x * window.getSize().x,
-		blocksView.getViewport().position.y * window.getSize().y}, blocksView.getSize() };
-		if (blocksBorders.contains(sf::Vector2f(event.position))) {
-			isTargetSaved = false;
-			EventBus::get().publish<SetTargetEvent>(SetTargetEvent{ targetPos, window.mapPixelToCoords(event.position, blocksView) });
-		}
+		if (isTargetSaved) {
+			sf::FloatRect blocksBorders{ {blocksView.getViewport().position.x * window.getSize().x,
+				blocksView.getViewport().position.y * window.getSize().y}, blocksView.getSize() };
+			if (blocksBorders.contains(sf::Vector2f(event.position))) {
+				isTargetSaved = false;
+				EventBus::get().publish<SetTargetEvent>(SetTargetEvent{ targetPos, window.mapPixelToCoords(event.position, blocksView) });
+			}
+		}		
 	}
 }
 
@@ -222,7 +221,7 @@ void Game::render()
     window.clear(sf::Color(100, 100, 100));
 
 	window.setView(raceView);
-	level.render(raceView, timeAccumulator / deltaTime);
+	level.render(timeAccumulator / deltaTime, isRaceOn);
 
 	window.setView(blocksView);
 	blockManager.render();
@@ -230,7 +229,17 @@ void Game::render()
 	window.setView(appView);
 	menu.render();
 	renderTime();
+
+	std::wstringstream wss;
+	if (isMouseOverRace) {
+		wss << "X: " << mousePos.x << " Y: " << mousePos.y;
+	}	
+	if (isTargetSaved) {
+		wss << L"\nСохранено X: " << targetPos.x << " Y: " << targetPos.y;
+	}
+	mouseCoordinates.setString(wss.str());
 	window.draw(mouseCoordinates);
+
 	popup.render();
 
     window.display();

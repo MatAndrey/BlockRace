@@ -12,8 +12,6 @@ using json = nlohmann::json;
 
 class Level {
     json jsonData;
-    sf::RenderWindow* window;
-    Car* car;
     std::vector<std::vector<sf::Vector2f>> roadBorders;
     std::vector<sf::CircleShape> checkpoints;
     int currCheckpoint = 0;
@@ -22,9 +20,21 @@ class Level {
     sf::Sprite mapSprite;
     sf::Vector2f carInitPos;
     sf::Angle carInitDir;
+
+    sf::Vector2f startPos;
+    bool isMoving = false;
+    sf::Vector2f cameraPos;
+    sf::View* view;
+    sf::RenderWindow* window;
+    Car* car;
+
+    void onMousePressed(const sf::Event::MouseButtonPressed& event);
+    void onMouseReleased(const sf::Event::MouseButtonReleased& event);
+    void onMouseMoved(const sf::Event::MouseMoved& event);
     bool checkCollision();
     void updateCheckPoint();
     void loadDataFromFile(const std::string& path);
+    sf::Vector2f getClampedCameraPos(sf::Vector2f cameraPos);
 
     std::vector<sf::VertexArray> borderLines;
     bool isBordersVisible = false;
@@ -36,9 +46,10 @@ class Level {
     void handleKeyPressed(const sf::Event::KeyPressed& event);
     void handleKeyReleased(const sf::Event::KeyReleased& event);
 public:
-    Level(const std::string& path, sf::RenderWindow* window, Car* car);
+    Level(const std::string& path, sf::RenderWindow* window, Car* car, sf::View* view);
 
-    void render(sf::View& view, float alpha);
+    void render(float alpha, bool isRunning);
     void update();
     void reset();
+    void setupCameraPos();
 };

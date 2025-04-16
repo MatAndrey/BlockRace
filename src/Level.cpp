@@ -1,6 +1,35 @@
 #include "Level.hpp"
 #include <iostream>
 
+void Level::onMousePressed(const sf::Event::MouseButtonPressed& event)
+{
+    if (event.button == sf::Mouse::Button::Left) {
+        sf::FloatRect viewBorders{ {view->getViewport().position.x * window->getSize().x,
+        view->getViewport().position.y * window->getSize().y}, view->getSize() };
+        if (viewBorders.contains(sf::Vector2f(event.position))) {
+            startPos = window->mapPixelToCoords(event.position, *view);
+            isMoving = true;
+        }
+    }    
+}
+
+void Level::onMouseReleased(const sf::Event::MouseButtonReleased& event)
+{
+    if (event.button == sf::Mouse::Button::Left) {
+        isMoving = false;
+    }
+}
+
+void Level::onMouseMoved(const sf::Event::MouseMoved& event)
+{
+    sf::FloatRect viewBorders{ {view->getViewport().position.x * window->getSize().x,
+        view->getViewport().position.y * window->getSize().y}, view->getSize() };
+    if (viewBorders.contains(sf::Vector2f(event.position)) && isMoving) {
+        sf::Vector2f newPos = window->mapPixelToCoords(event.position, *view);
+        cameraPos += startPos - newPos;
+    }
+}
+
 bool Level::checkCollision() {
     if (roadBorders.empty()) return false;
 
@@ -121,6 +150,25 @@ void Level::loadDataFromFile(const std::string& path)
     }
 }
 
+sf::Vector2f Level::getClampedCameraPos(sf::Vector2f cameraPos)
+{
+    sf::Vector2f clamped = cameraPos;
+    if (mapSprite.getGlobalBounds().contains(cameraPos)) {
+        clamped.x = std::clamp(cameraPos.x,
+            view->getSize().x / 2,
+            mapSprite.getLocalBounds().size.x - view->getSize().x / 2);
+        clamped.y = std::clamp(cameraPos.y,
+            view->getSize().y / 2,
+            mapSprite.getLocalBounds().size.y - view->getSize().y / 2);
+    }
+    return clamped;
+}
+
+void Level::setupCameraPos()
+{
+    cameraPos = getClampedCameraPos(car->pos);
+}
+
 void Level::handleCheatRace(const CheatRaceEvent& event)
 {
     if (raceMode) {
@@ -177,8 +225,8 @@ void Level::handleKeyReleased(const sf::Event::KeyReleased& event)
     }
 }
 
-Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
-	car(car), window(window), mapTexture(), mapSprite(mapTexture)
+Level::Level(const std::string& path, sf::RenderWindow* window, Car* car, sf::View* view) :
+	car(car), window(window), mapTexture(), mapSprite(mapTexture), view(view)
 {
     loadDataFromFile(path);
     updateCheckPoint();
@@ -195,24 +243,25 @@ Level::Level(const std::string& path, sf::RenderWindow* window, Car* car) :
         borderLines.push_back(line);
     }
 
+    EventBus::get().subscribe<sf::Event::MouseButtonPressed>(this, &Level::onMousePressed);
+    EventBus::get().subscribe<sf::Event::MouseButtonReleased>(this, &Level::onMouseReleased);
+    EventBus::get().subscribe<sf::Event::MouseMoved>(this, &Level::onMouseMoved);
+
     EventBus::get().subscribe<CheatRaceEvent>(this, &Level::handleCheatRace);
     EventBus::get().subscribe<CheatShowBordersEvent>(this, &Level::handleCheatShowBorders);
     EventBus::get().subscribe<CheatNoBordersEvent>(this, &Level::handleCheatNoBorders);
 }
 
-void Level::render(sf::View& view, float alpha)
+void Level::render(float alpha, bool isRunning)
 {
     sf::Vector2f interpolatedPos = car->prevPos + alpha * (car->pos - car->prevPos);
-    sf::Vector2f cameraPos = interpolatedPos;
-    if (mapSprite.getGlobalBounds().contains(interpolatedPos)) {
-        cameraPos.x = std::clamp(interpolatedPos.x,
-            view.getSize().x / 2,
-            mapSprite.getLocalBounds().size.x - view.getSize().x / 2);
-        cameraPos.y = std::clamp(interpolatedPos.y,
-            view.getSize().y / 2,
-            mapSprite.getLocalBounds().size.y - view.getSize().y / 2);
-    }    
-    view.setCenter(cameraPos);
+    if (isRunning) {
+        view->setCenter(getClampedCameraPos(interpolatedPos));
+    }
+    else {
+        view->setCenter(cameraPos);
+    }        
+    
 	window->draw(mapSprite);
     window->draw(checkpoints[currCheckpoint]);
     car->render(interpolatedPos);

@@ -35,6 +35,8 @@ class Game {
 	const unsigned initHeight = 1080;
 
 	sf::Vector2f targetPos;
+	sf::Vector2f mousePos;
+	bool isMouseOverRace = false;
 	bool isTargetSaved = false;
 
 	void update();

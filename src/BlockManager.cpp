@@ -212,7 +212,7 @@ void BlockManager::onMouseButtonReleased(const sf::Event::MouseButtonReleased& m
 		for (auto iter = blocks.begin(); iter != blocks.end();) {
 			Block* block = *iter;
 
-			if (block->pos.x + block->size.x < blockStoreWidth) {
+			if (block->pos.x < blockStoreWidth) {
 				iter = blocks.erase(iter);
 				delete block;
 				isSavedNow = false;
