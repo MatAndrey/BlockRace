@@ -1,121 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polygon Collision Editor</title>
-    <style>
-        #canvasContainer {
-            position: relative;
-            display: inline-block;
-        }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Polygon Collision Editor</title>
+        <style>
+            #canvasContainer {
+                position: relative;
+                display: inline-block;
+            }
 
-        canvas {
-            border: 1px solid black;
-        }
-    </style>
-</head>
-<body>
-    <h1>Polygon Collision Editor</h1>
-    <input type="file" id="imageLoader" accept="image/*"><br><br>
-    <div id="canvasContainer">
-        <canvas id="imageCanvas"></canvas>
-    </div>
-    <div id="coordinatesList">
-        <h3>Coordinates:</h3>
-        <p id="coordinatesOutput"></p>
-    </div>
+            canvas {
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Polygon Collision Editor</h1>
+        <input type="file" id="imageLoader" accept="image/*" /><br /><br />
+        <div id="canvasContainer">
+            <canvas id="imageCanvas"></canvas>
+        </div>
+        <div id="coordinatesList">
+            <h3>Coordinates:</h3>
+            <p id="coordinatesOutput"></p>
+        </div>
 
-    <script>
-        const canvas = document.getElementById('imageCanvas');
-        const ctx = canvas.getContext('2d');
-        const imageLoader = document.getElementById('imageLoader');
-        const coordinatesOutput = document.getElementById('coordinatesOutput');
-        let points = [];
-        let draggingPoint = null;
-        let img = new Image();
+        <script>
+            const canvas = document.getElementById("imageCanvas");
+            const ctx = canvas.getContext("2d");
+            const imageLoader = document.getElementById("imageLoader");
+            const coordinatesOutput = document.getElementById("coordinatesOutput");
+            let points = [];
+            let draggingPoint = null;
+            let img = new Image();
 
-        imageLoader.addEventListener('change', (e) => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                img.src = event.target.result;
+            imageLoader.addEventListener("change", (e) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            });
+
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
             };
-            reader.readAsDataURL(e.target.files[0]);
-        });
 
-        img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-        };
-
-        canvas.addEventListener('mousedown', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            draggingPoint = points.find(point =>
-                Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2) < 10
-            );
-        });
-
-        canvas.addEventListener('mouseup', () => {
-            draggingPoint = null;
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            if (draggingPoint) {
+            canvas.addEventListener("mousedown", (e) => {
                 const rect = canvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
 
-                draggingPoint.x = x;
-                draggingPoint.y = y;
+                draggingPoint = points.find((point) => Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2) < 10);
+            });
+
+            canvas.addEventListener("mouseup", () => {
+                draggingPoint = null;
+            });
+
+            canvas.addEventListener("mousemove", (e) => {
+                if (draggingPoint) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    draggingPoint.x = x;
+                    draggingPoint.y = y;
+                    updateCanvas();
+                    updateCoordinates();
+                }
+            });
+
+            canvas.addEventListener("click", (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                points.push({ x, y });
                 updateCanvas();
                 updateCoordinates();
-            }
-        });
-
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            points.push({ x, y });
-            updateCanvas();
-            updateCoordinates();
-        });
-
-        function updateCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
-
-            ctx.strokeStyle = 'red';
-            ctx.lineWidth = 2;
-
-            if (points.length > 1) {
-                ctx.beginPath();
-                ctx.moveTo(points[0].x, points[0].y);
-                for (let i = 1; i < points.length; i++) {
-                    ctx.lineTo(points[i].x, points[i].y);
-                }
-                ctx.closePath();
-                ctx.stroke();
-            }
-
-            points.forEach((point) => {
-                ctx.fillStyle = 'blue';
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
-                ctx.fill();
             });
-        }
 
-        function updateCoordinates() {
-            coordinatesOutput.textContent = points
-                .map(point => `[${point.x.toFixed(2)}, ${point.y.toFixed(2)}]`)
-                .join(', ');
-        }
-    </script>
-</body>
+            function updateCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 2;
+
+                if (points.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y);
+                    for (let i = 1; i < points.length; i++) {
+                        ctx.lineTo(points[i].x, points[i].y);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+
+                points.forEach((point) => {
+                    ctx.fillStyle = "blue";
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+            }
+
+            function updateCoordinates() {
+                coordinatesOutput.textContent = points.map((point) => `[${point.x.toFixed(2)}, ${point.y.toFixed(2)}]`).join(", ");
+            }
+        </script>
+    </body>
 </html>

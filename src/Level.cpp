@@ -26,7 +26,7 @@ void Level::onMouseMoved(const sf::Event::MouseMoved& event)
         view->getViewport().position.y * window->getSize().y}, view->getSize() };
     if (viewBorders.contains(sf::Vector2f(event.position)) && isMoving) {
         sf::Vector2f newPos = window->mapPixelToCoords(event.position, *view);
-        cameraPos += startPos - newPos;
+        cameraPos = getClampedCameraPos(cameraPos + startPos - newPos);
     }
 }
 
@@ -153,13 +153,23 @@ void Level::loadDataFromFile(const std::string& path)
 sf::Vector2f Level::getClampedCameraPos(sf::Vector2f cameraPos)
 {
     sf::Vector2f clamped = cameraPos;
-    if (mapSprite.getGlobalBounds().contains(cameraPos)) {
-        clamped.x = std::clamp(cameraPos.x,
-            view->getSize().x / 2,
-            mapSprite.getLocalBounds().size.x - view->getSize().x / 2);
-        clamped.y = std::clamp(cameraPos.y,
-            view->getSize().y / 2,
-            mapSprite.getLocalBounds().size.y - view->getSize().y / 2);
+    if (mapSprite.getGlobalBounds().contains(cameraPos) || true) {
+        if (view->getSize().x < mapSprite.getLocalBounds().size.x) {
+            clamped.x = std::clamp(cameraPos.x,
+                view->getSize().x / 2,
+                mapSprite.getLocalBounds().size.x - view->getSize().x / 2);
+        }
+        else {
+            clamped.x = mapSprite.getLocalBounds().size.x / 2;
+        }
+        if (view->getSize().y < mapSprite.getLocalBounds().size.y) {
+            clamped.y = std::clamp(cameraPos.y,
+                view->getSize().y / 2,
+                mapSprite.getLocalBounds().size.y - view->getSize().y / 2);
+        }
+        else {
+            clamped.x = mapSprite.getLocalBounds().size.y / 2;
+        }
     }
     return clamped;
 }
@@ -259,7 +269,7 @@ void Level::render(float alpha, bool isRunning)
         view->setCenter(getClampedCameraPos(interpolatedPos));
     }
     else {
-        view->setCenter(cameraPos);
+        view->setCenter(getClampedCameraPos(cameraPos));
     }        
     
 	window->draw(mapSprite);
