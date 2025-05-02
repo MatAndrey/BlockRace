@@ -16,6 +16,7 @@ public:
         const std::vector<std::wstring>& options,
         Callback callback = nullptr
     );
+    void showLevelSelection(const std::vector<std::wstring>& levelNames, Callback callback);
     void hide();
     void render();
     void handleEvent(const sf::Event& event);

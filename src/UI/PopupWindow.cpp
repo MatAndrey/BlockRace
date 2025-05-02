@@ -46,6 +46,42 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
     visible = true;
 }
 
+void PopupWindow::showLevelSelection(const std::vector<std::wstring>& levelNames, Callback callback) {
+    currentCallback = callback;
+
+    sf::Vector2f parentSize = static_cast<sf::Vector2f>(parentWindow.getSize());
+    background.setSize(parentSize);
+    background.setFillColor(sf::Color(0, 0, 0, 150));
+
+    float buttonWidth = 120.f, buttonHeight = 50.f, margin = 20.f;
+    size_t columns = 5;
+    size_t rows = (levelNames.size() + columns - 1) / columns;
+
+    float totalWidth = columns * buttonWidth + (columns - 1) * margin;
+    float totalHeight = rows * buttonHeight + (rows - 1) * margin;
+    float startX = (parentSize.x - totalWidth) / 2;
+    float startY = (parentSize.y - totalHeight) / 2;
+
+    buttons.clear();
+    for (size_t i = 0; i < levelNames.size(); ++i) {
+        size_t row = i / columns, col = i % columns;
+
+        Button* button = new Button(
+            { startX + col * (buttonWidth + margin), startY + row * (buttonHeight + margin) },
+            &parentWindow, levelNames[i],
+            [this, i]() {
+                if (currentCallback) {
+                    currentCallback(i);
+                }
+                hide();
+            },
+            { buttonWidth, buttonHeight });
+        buttons.push_back(button);
+    }
+
+    visible = true;
+}
+
 void PopupWindow::hide() {
     visible = false;
     for (Button* button : buttons) {
@@ -73,20 +109,23 @@ void PopupWindow::handleEvent(const sf::Event& event) {
     if (const auto& mousePressed = event.getIf<sf::Event::MouseButtonPressed>()) {
         sf::Vector2f mousePos = parentWindow.mapPixelToCoords(
             { mousePressed->position.x, mousePressed->position.y });
+
         if (mousePressed->button == sf::Mouse::Button::Left) {
+            bool clickedOnButton = false;
+
             for (int i = 0; i < buttons.size(); i++) {
                 if (buttons[i]->contains(mousePos) && currentCallback) {
                     hide();
                     currentCallback(i);
+                    clickedOnButton = true;
+                    break;
                 }
             }
+
+            if (!clickedOnButton) {
+                hide();
+            }
         }
-    }
-    if (const auto& mouseMoved = event.getIf<sf::Event::MouseMoved>()) {
-        for (auto& elem : UIElement::getAllElements()) {
-            elem->updateHoverState(mouseMoved->position);
-        }
-        UIElement::updateCursor(parentWindow);
     }
 }
 

@@ -6,7 +6,7 @@ Game::Game() :
 	level(".\\assets\\maps\\level1.json", &window, &car, &raceView),
 	popup(window),
 	blockManager(&window, &car, &blocksView),
-	menu(&window, 30),
+	menu(&window, 30, &popup),
 	font(".\\assets\\fonts\\Share-Tech-CYR.otf"),
 	raceTimeText(font),
 	mouseCoordinates(font)
