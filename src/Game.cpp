@@ -3,7 +3,7 @@
 
 Game::Game() :
 	car({ 10, 10 }, & window),
-	level(".\\assets\\maps\\level1.json", &window, &car, &raceView),
+	level(L".\\assets\\maps\\level1.json", &window, &car, &raceView),
 	popup(window),
 	blockManager(&window, &car, &blocksView),
 	menu(&window, 30, &popup),
@@ -140,6 +140,9 @@ void Game::onWindowResized(const sf::Event::Resized&) {
 	blocksView.setViewport(sf::FloatRect({ 0, menu.height / windowSize.y }, { 0.25f, workAreaHeight / windowSize.y }));
 	blocksView.setSize({ 0.25f * windowSize.x, workAreaHeight });
 	blocksView.setCenter({ 0.25f * windowSize.x / 2, workAreaHeight / 2 });
+
+	mouseCoordinates.setPosition({ raceView.getViewport().position.x * windowSize.x,
+		raceView.getViewport().position.y * windowSize.y });
 }
 
 void Game::onSimulationStop(const StopSimulationEvent& event)

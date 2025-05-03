@@ -41,6 +41,12 @@ struct SetTargetEvent {
     sf::Vector2f eventPos;
 };
 
+struct SetLevelEvent {
+    std::wstring &levelFilePath;
+};
+
+struct ClearBlocksEvent {};
+
 struct CheatRaceEvent {};
 
 struct CheatShowBordersEvent {};

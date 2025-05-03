@@ -31,8 +31,8 @@ class Game {
 	sf::Text raceTimeText;
 	sf::Text mouseCoordinates;
 
-	const unsigned initWidth = 1920;
-	const unsigned initHeight = 1080;
+	const unsigned initWidth = 0;
+	const unsigned initHeight = 0;
 
 	sf::Vector2f targetPos;
 	sf::Vector2f mousePos;

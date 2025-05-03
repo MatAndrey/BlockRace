@@ -27,6 +27,7 @@ BlockManager::BlockManager(sf::RenderWindow* window, Car* car, sf::View* blocksV
 	EventBus::get().subscribe<sf::Event::MouseButtonPressed>(this, &BlockManager::onMouseButtonPressed);
 	EventBus::get().subscribe<sf::Event::MouseButtonReleased>(this, &BlockManager::onMouseButtonReleased);
 	EventBus::get().subscribe<sf::Event::MouseMoved>(this, &BlockManager::onMouseMoved);
+	EventBus::get().subscribe<ClearBlocksEvent>(this, &BlockManager::onClearBlocks);
 }
 
 void BlockManager::update(sf::Time deltaTime)
@@ -256,4 +257,11 @@ void BlockManager::onMouseMoved(const sf::Event::MouseMoved& mouseMoved) {
 			isSavedNow = false;
 		}
 	}
+}
+
+void BlockManager::onClearBlocks(const ClearBlocksEvent& event)
+{
+	blocks.clear();
+	EventBus::get().publish<StopSimulationEvent>(StopSimulationEvent{});
+	isSavedNow = false;
 }

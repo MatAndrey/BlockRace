@@ -41,4 +41,5 @@ public:
 	void onMouseButtonPressed(const sf::Event::MouseButtonPressed& event);
 	void onMouseButtonReleased(const sf::Event::MouseButtonReleased& event);
 	void onMouseMoved(const sf::Event::MouseMoved& event);
+	void onClearBlocks(const ClearBlocksEvent& event);
 };

@@ -10,12 +10,14 @@ class Menu {
 	Button saveButton;
 	Button saveAsButton;
 	Button loadButton;
+	Button clearBlocksButton;
 	Button levelSelectButton;
 	Button exitButton;
 
 	void onSave();
 	void onSaveAs();
 	void onLoad();
+	void onClear();
 	void onLevelSelect();
 	void onExit();
 public:

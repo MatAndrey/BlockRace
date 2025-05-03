@@ -30,6 +30,14 @@ void Level::onMouseMoved(const sf::Event::MouseMoved& event)
     }
 }
 
+void Level::onLevelSet(const SetLevelEvent& event)
+{
+    loadDataFromFile(event.levelFilePath);
+    updateCheckPoint();
+    reset();
+    setupCameraPos();
+}
+
 bool Level::checkCollision() {
     if (roadBorders.empty()) return false;
 
@@ -114,7 +122,7 @@ void Level::updateCheckPoint()
     }
 }
 
-void Level::loadDataFromFile(const std::string& path)
+void Level::loadDataFromFile(const std::wstring& path)
 {
     std::ifstream file(path);
     jsonData = json::parse(file);
@@ -127,7 +135,7 @@ void Level::loadDataFromFile(const std::string& path)
     carInitPos = sf::Vector2f(jsonData["carInitX"], jsonData["carInitY"]);
     carInitDir = sf::degrees(jsonData["carInitDir"]);
 
-
+    roadBorders.clear();
     for (const auto& border : jsonData["mapBorders"]) {
         std::vector<sf::Vector2f> vertexes;
         for (const auto& borderVertex : border) {
@@ -138,6 +146,7 @@ void Level::loadDataFromFile(const std::string& path)
 
     checkpointRadius = jsonData["checkpointRadius"].get<float>();
 
+    checkpoints.clear();
     for (const auto& checkpoint : jsonData["checkpoints"]) {
         sf::Vector2f center{ checkpoint[0] - checkpointRadius, checkpoint[1] - checkpointRadius };
         sf::CircleShape s;
@@ -235,7 +244,7 @@ void Level::handleKeyReleased(const sf::Event::KeyReleased& event)
     }
 }
 
-Level::Level(const std::string& path, sf::RenderWindow* window, Car* car, sf::View* view) :
+Level::Level(const std::wstring& path, sf::RenderWindow* window, Car* car, sf::View* view) :
 	car(car), window(window), mapTexture(), mapSprite(mapTexture), view(view)
 {
     loadDataFromFile(path);
@@ -256,6 +265,7 @@ Level::Level(const std::string& path, sf::RenderWindow* window, Car* car, sf::Vi
     EventBus::get().subscribe<sf::Event::MouseButtonPressed>(this, &Level::onMousePressed);
     EventBus::get().subscribe<sf::Event::MouseButtonReleased>(this, &Level::onMouseReleased);
     EventBus::get().subscribe<sf::Event::MouseMoved>(this, &Level::onMouseMoved);
+    EventBus::get().subscribe<SetLevelEvent>(this, &Level::onLevelSet);
 
     EventBus::get().subscribe<CheatRaceEvent>(this, &Level::handleCheatRace);
     EventBus::get().subscribe<CheatShowBordersEvent>(this, &Level::handleCheatShowBorders);
