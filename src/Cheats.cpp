@@ -20,7 +20,7 @@ void Cheats::handleTextInput(const sf::Event::KeyPressed& keyPressed)
 	}
 	if (endsWith(code, "noborders")) {
 		EventBus::get().publish<CheatNoBordersEvent>(CheatNoBordersEvent{});
-	}
+	}	
 }
 
 Cheats::Cheats()

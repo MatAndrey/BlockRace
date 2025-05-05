@@ -17,7 +17,7 @@ public:
         Callback callback = nullptr
     );
     void showLevelSelection(const std::vector<std::wstring>& levelNames, Callback callback);
-    void showCredits(const std::vector<std::vector<std::wstring>>& credits, float scrollSpeed = 100.f);
+    void showCredits(const std::vector<std::vector<std::wstring>>& credits);
     void hide();
     void render();
     void handleEvent(const sf::Event& event);
@@ -37,7 +37,8 @@ private:
     std::vector<sf::Text> creditsTexts;
     sf::Clock creditsClock;
     bool isCreditsMode = false;
-    float creditsScrollSpeed = 100.f; // (пикселей/сек)
+    float creditsScrollSpeed = 100.0f; // (пикселей/сек)
+    float creditsOffset = 0;
 
     bool visible = false;
 

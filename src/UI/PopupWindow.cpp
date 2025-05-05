@@ -16,6 +16,7 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
 
     sf::Vector2f parentSize = static_cast<sf::Vector2f>(parentWindow.getSize());
     background.setSize(parentSize);
+    background.setFillColor(sf::Color(0, 0, 0, 150));
 
     windowRect.setSize({ parentSize.x * 0.4f, parentSize.y * 0.3f });
     windowRect.setPosition({ parentSize.x * 0.3f, parentSize.y * 0.35f });
@@ -98,7 +99,7 @@ float computeTextHeight(const sf::Font& font, unsigned characterSize)
     return font.getLineSpacing(characterSize);
 }
 
-void PopupWindow::showCredits(const std::vector<std::vector<std::wstring>>& credits, float scrollSpeed) {
+void PopupWindow::showCredits(const std::vector<std::vector<std::wstring>>& credits) {
     hide();
     isCreditsMode = true;
     visible = true;
@@ -150,13 +151,14 @@ void PopupWindow::showCredits(const std::vector<std::vector<std::wstring>>& cred
         currentY += 70;
     }
 
-    creditsScrollSpeed = scrollSpeed;
     creditsClock.restart();
 }
 
 void PopupWindow::hide() {
     visible = false;
     isCreditsMode = false;
+    creditsOffset = 0;
+    creditsScrollSpeed = 100;
     for (Button* button : buttons) {
         delete button;
     }
@@ -170,11 +172,7 @@ void PopupWindow::render() {
     {
         sf::Time dt = creditsClock.restart();
         float dy = creditsScrollSpeed * dt.asSeconds();
-
-        for (auto& text : creditsTexts)
-        {
-            text.move(sf::Vector2f(0, -dy));
-        }
+        creditsOffset += dy;
 
         float textHeight = computeTextHeight(font, 32);
 
@@ -185,10 +183,21 @@ void PopupWindow::render() {
             return;
         }
 
+        float windowHeight = (static_cast<sf::Vector2f>(parentWindow.getSize())).y;
+        float creditsHeight = creditsTexts.back().getPosition().y + textHeight;
+
         parentWindow.draw(background);
+        sf::Transform trans1;
+        trans1.translate({ 0, -creditsOffset });
+        sf::Transform trans2;
+        trans2.translate({ 0, creditsTexts.back().getPosition().y + textHeight * 2 - windowHeight - creditsOffset });
         for (auto& text : creditsTexts)
         {
-            parentWindow.draw(text);
+            parentWindow.draw(text, trans1);
+            parentWindow.draw(text, trans2);
+        }
+        if (creditsOffset > creditsHeight) {
+            creditsOffset -= creditsHeight - windowHeight + textHeight;
         }
     }
     else {
@@ -205,6 +214,25 @@ void PopupWindow::render() {
 
 void PopupWindow::handleEvent(const sf::Event& event) {
     if (!visible) return;
+
+    if (event.is <sf::Event::Closed>()) {
+        hide();
+        EventBus::get().publish<ExitEvent>({});
+    }
+
+    if (const auto& keyPressed = event.getIf<sf::Event::KeyPressed>()) {
+        if (keyPressed->scancode == sf::Keyboard::Scan::Escape) {
+            hide();
+        }
+        if (isCreditsMode) {
+            if (keyPressed->code == sf::Keyboard::Key::Equal) {
+                creditsScrollSpeed += 100;
+            }
+            if (keyPressed->code == sf::Keyboard::Key::Hyphen) {
+                creditsScrollSpeed -= 100;
+            }
+        }        
+    }
 
     if (isCreditsMode) {
         if (const auto& mousePressed = event.getIf<sf::Event::MouseButtonPressed>()) {
