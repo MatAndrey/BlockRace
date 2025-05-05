@@ -7,7 +7,8 @@ Menu::Menu(sf::RenderWindow* window, float height, PopupWindow* popup) :
 	loadButton(sf::Vector2f{ 330, 5 }, window, L"Загрузить", std::bind(&Menu::onLoad, this), sf::Vector2f{ 150, height - 10 }),
 	clearBlocksButton(sf::Vector2f{ 490, 5 }, window, L"Очистить", std::bind(&Menu::onClear, this), sf::Vector2f{ 150, height - 10 }),
 	levelSelectButton(sf::Vector2f{ 650, 5 }, window, L"Уровни", std::bind(&Menu::onLevelSelect, this), sf::Vector2f{ 150, height - 10 }),
-	exitButton(sf::Vector2f{ 810, 5 }, window, L"Выйти", std::bind(&Menu::onExit, this), sf::Vector2f{ 150, height - 10 }),
+	credits(sf::Vector2f{ 810, 5 }, window, L"Титры", std::bind(&Menu::onCredits, this), sf::Vector2f{ 150, height - 10 }),
+	exitButton(sf::Vector2f{ 970, 5 }, window, L"Выйти", std::bind(&Menu::onExit, this), sf::Vector2f{ 150, height - 10 }),
 	height(height),
 	window(window),
 	popup(popup)
@@ -20,6 +21,7 @@ void Menu::render()
 	loadButton.render();
 	clearBlocksButton.render();
 	levelSelectButton.render();
+	credits.render();
 	exitButton.render();
 }
 
@@ -58,6 +60,28 @@ void Menu::onLevelSelect() {
 		};
 
 	popup->showLevelSelection(levels, callback);
+}
+
+void Menu::onCredits()
+{
+	std::vector<std::vector<std::wstring>> credits = {
+	{L"Ведущий программист", L"Матюшин Андрей"},
+	{L"Помощник программиста", L"Чубич Артем"},
+	{L"Геймдизайнер", L"Матюшин Андрей", L"Чубич Артем"},
+	{L"Аниматор", L"Матюшин Андрей"},
+	{L"Разработчик интерфейса", L"Матюшин Андрей", L"Чубич Артем"},
+	{L"Дизайнер уровней", L"Матюшин Андрей"},
+	{L"Руководитель проекта", L"Матюшин Андрей"},
+	{L"Сценарист", L"Чубич Артем"},
+	{L"Тестировщик", L"Чубич Артем"},
+	{L"Менеджер локализации", L"Матюшин Андрей"},
+	{L"Специалист по спецэффектам", L"Чубич Артем"},
+	{L"Продюсер", L"Чубич Артем"},
+	{L"Разработчик физики", L"Матюшин Андрей"},
+	{L"Графический дизайнер", L"Матюшин Андрей"},
+	{L"Редактор титров", L"Чубич Артем"},
+	};
+	popup->showCredits(credits);
 }
 
 void Menu::onExit()

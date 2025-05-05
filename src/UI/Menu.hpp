@@ -12,6 +12,7 @@ class Menu {
 	Button loadButton;
 	Button clearBlocksButton;
 	Button levelSelectButton;
+	Button credits;
 	Button exitButton;
 
 	void onSave();
@@ -19,6 +20,7 @@ class Menu {
 	void onLoad();
 	void onClear();
 	void onLevelSelect();
+	void onCredits();
 	void onExit();
 public:
 	float height;
