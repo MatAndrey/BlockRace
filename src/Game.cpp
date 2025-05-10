@@ -13,6 +13,7 @@ Game::Game() :
 {
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 	window.setKeyRepeatEnabled(false);
+	window.setMinimumSize(sf::Vector2u{ (unsigned) initWidth, (unsigned)initHeight });
 
 	sf::WindowHandle hwnd = window.getNativeHandle();
 	ShowWindow(hwnd, SW_SHOWMAXIMIZED);
