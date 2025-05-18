@@ -42,8 +42,10 @@ struct SetTargetEvent {
 };
 
 struct SetLevelEvent {
-    std::wstring &levelFilePath;
+    int levelNumber;
 };
+
+struct NextLevelEvent {};
 
 struct ClearBlocksEvent {};
 

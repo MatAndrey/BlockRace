@@ -55,8 +55,7 @@ void Menu::onLevelSelect() {
 	};
 
 	auto callback = [this](int selectedIndex) {
-		std::wstring levelFile = L"./assets/maps/level" + std::to_wstring(selectedIndex + 1) + L".json";
-		EventBus::get().publish<SetLevelEvent>(SetLevelEvent{ levelFile });
+		EventBus::get().publish<SetLevelEvent>(SetLevelEvent{ selectedIndex+1 });
 		};
 
 	popup->showLevelSelection(levels, callback);

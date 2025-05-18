@@ -30,6 +30,7 @@ class Game {
 	sf::Font font;
 	sf::Text raceTimeText;
 	sf::Text mouseCoordinates;
+	int currentLevel = 1;
 
 	const unsigned initWidth = 800;
 	const unsigned initHeight = 600;
@@ -57,6 +58,8 @@ class Game {
 	void onSaveFile(const SaveFileEvent& event);
 	void onLoadFile(const LoadFileEvent& event);
 	void onExit(const ExitEvent& event);
+	void onLevelSet(const SetLevelEvent& event);
+	void onNextLevel(const NextLevelEvent& event);
 
 	Cheats cheats;
 public:

@@ -3,23 +3,28 @@
 
 PopupWindow::PopupWindow(sf::RenderWindow& parentWindow)
     : parentWindow(parentWindow), font(".\\assets\\fonts\\Share-Tech-CYR.otf"), 
-    titleText(font), messageText(font) {
+    titleText(font), messageText(font),
+    winLossImage(winTexture) {
     background.setFillColor(sf::Color(0, 0, 0, 150));
     windowRect.setFillColor(sf::Color(70, 70, 70));
     windowRect.setOutlineColor(sf::Color::White);
     windowRect.setOutlineThickness(2);
+
+    winLossImage.setScale({ 0.4, 0.4 });
+    winTexture.setSmooth(true);
 }
 
 void PopupWindow::show(const std::wstring& title, const std::wstring& message,
     const std::vector<std::wstring>& options, Callback callback) {
+    isImageVisible = false;
     currentCallback = callback;
 
     sf::Vector2f parentSize = static_cast<sf::Vector2f>(parentWindow.getSize());
     background.setSize(parentSize);
     background.setFillColor(sf::Color(0, 0, 0, 150));
 
-    windowRect.setSize({ parentSize.x * 0.4f, parentSize.y * 0.3f });
-    windowRect.setPosition({ parentSize.x * 0.3f, parentSize.y * 0.35f });
+    windowRect.setSize({ parentSize.x * 0.3f, parentSize.y * 0.3f });
+    windowRect.setPosition({ parentSize.x * 0.35f, parentSize.y * 0.35f });
 
     setupText(titleText, title, font, 24, sf::Color::White);
     setupText(messageText, message, font, 18, sf::Color::White);
@@ -27,7 +32,7 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
     titleText.setPosition(windowRect.getPosition() + sf::Vector2f{ 20, 20 });
     messageText.setPosition(windowRect.getPosition() + sf::Vector2f{ 20, 70 });
 
-    float buttonWidth = 150.f;
+    float buttonWidth = 160.f;
     float buttonHeight = 40.f;
     float startX = windowRect.getPosition().x +
         (windowRect.getSize().x - (buttonWidth + 10) * options.size() + 10) / 2;
@@ -45,6 +50,46 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
     }
 
     visible = true;
+}
+
+void PopupWindow::showWinMessage(float raceTimeSecs, bool lastLevel) {
+    std::wstringstream wss;
+    wss << L"Трасса завершена. Время: " << raceTimeSecs;
+    show(
+        L"",
+        wss.str(),
+        lastLevel ?
+        std::vector<std::wstring>{L"Продолжить"} :
+        std::vector<std::wstring>{ L"Продолжить", L"Следующий уровень" },
+        [this](int option) {
+            if (option == 1) {
+                EventBus::get().publish<NextLevelEvent>({});
+            }
+        });
+    sf::Vector2f parentSize = static_cast<sf::Vector2f>(parentWindow.getSize());
+    winLossImage.setScale({ 0.4, 0.4 });
+    winTexture.setSmooth(true);
+    winLossImage.setPosition({ parentSize.x * 0.5f - winLossImage.getLocalBounds().size.x / 2 * winLossImage.getScale().x, parentSize.y * 0.35f - 90 });
+
+    messageText.setPosition(windowRect.getPosition() + sf::Vector2f{ 20, 180 });
+
+    winLossImage.setTexture(winTexture);
+    isImageVisible = true;
+}
+
+void PopupWindow::showLossMessage()
+{
+    show(
+        L"",
+        L"",
+        std::vector<std::wstring>{L"Заново"},
+        nullptr
+    );
+    sf::Vector2f parentSize = static_cast<sf::Vector2f>(parentWindow.getSize());
+    winLossImage.setPosition({ parentSize.x * 0.5f - winLossImage.getLocalBounds().size.x / 2 * winLossImage.getScale().x, parentSize.y * 0.35f - 60 });
+
+    winLossImage.setTexture(lossTexture);
+    isImageVisible = true;
 }
 
 void PopupWindow::showLevelSelection(const std::vector<std::wstring>& levelNames, Callback callback) {
@@ -205,6 +250,9 @@ void PopupWindow::render() {
         parentWindow.draw(windowRect);
         parentWindow.draw(titleText);
         parentWindow.draw(messageText);
+        if (isImageVisible) {
+            parentWindow.draw(winLossImage);
+        }        
 
         for (auto& button : buttons) {
             button->render();

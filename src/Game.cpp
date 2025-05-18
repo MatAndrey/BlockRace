@@ -3,7 +3,7 @@
 
 Game::Game() :
 	car({ 10, 10 }, & window),
-	level(L".\\assets\\maps\\level1.json", &window, &car, &raceView),
+	level(&window, &car, &raceView),
 	popup(window),
 	blockManager(&window, &car, &blocksView),
 	menu(&window, 30, &popup),
@@ -37,8 +37,7 @@ Game::Game() :
 
 	setupEventListeners();
 
-	level.setupCameraPos();
-
+	EventBus::get().publish<SetLevelEvent>({ 1 });
 	EventBus::get().publish<LoadFileEvent>(LoadFileEvent{ L"save.dat" });
 }
 
@@ -65,6 +64,8 @@ void Game::setupEventListeners() {
 	EventBus::get().subscribe<sf::Event::MouseMoved>(this, &Game::onMouseMoved);
 	EventBus::get().subscribe<sf::Event::MouseButtonPressed>(this, &Game::onMousePressed);
 	EventBus::get().subscribe<RaceFinishedEvent>(this, &Game::onRaceFinish);
+	EventBus::get().subscribe<SetLevelEvent>(this, &Game::onLevelSet);
+	EventBus::get().subscribe<NextLevelEvent>(this, &Game::onNextLevel);
 }
 
 void Game::handleEvents() {
@@ -163,20 +164,14 @@ void Game::onSimulationStart(const StartSimulationEvent& event)
 void Game::onRaceFinish(const RaceFinishedEvent& event)
 {
 	isRaceOn = false;
-	std::wstringstream wss;
-	wss << L"Трасса завершена. Время: " << raceTime.asSeconds();
 	EventBus::get().publish<StopSimulationEvent>(StopSimulationEvent{});
-	popup.show(L"Ура!", wss.str(),
-		{ L"Продолжить" },
-		[this](int option) {});
+	popup.showWinMessage(raceTime.asSeconds(), currentLevel == 10);
 }
 
 void Game::onCarAccident(const CarAccidentEvent& event)
 {
 	EventBus::get().publish<StopSimulationEvent>(StopSimulationEvent{});
-	popup.show(L"Авария", L"Машинка выкатилась за пределы дороги",
-		{ L"Заново" },
-		[this](int option) {});
+	popup.showLossMessage();
 }
 
 void Game::onSaveFile(const SaveFileEvent& event)
@@ -212,7 +207,20 @@ void Game::onExit(const ExitEvent& event)
 				break;
 			}
 		});
-}	
+}
+void Game::onLevelSet(const SetLevelEvent& event)
+{
+	currentLevel = event.levelNumber;
+	level.setLevel(currentLevel);
+}
+
+void Game::onNextLevel(const NextLevelEvent& event)
+{
+	if (currentLevel < 10) {
+		level.setLevel(++currentLevel);
+	}
+}
+
 
 void Game::onWindowClosed(const sf::Event::Closed& event)
 {

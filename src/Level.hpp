@@ -31,7 +31,6 @@ class Level {
     void onMousePressed(const sf::Event::MouseButtonPressed& event);
     void onMouseReleased(const sf::Event::MouseButtonReleased& event);
     void onMouseMoved(const sf::Event::MouseMoved& event);
-    void onLevelSet(const SetLevelEvent& event);
     bool checkCollision();
     void updateCheckPoint();
     void loadDataFromFile(const std::wstring& path);
@@ -47,10 +46,11 @@ class Level {
     void handleKeyPressed(const sf::Event::KeyPressed& event);
     void handleKeyReleased(const sf::Event::KeyReleased& event);
 public:
-    Level(const std::wstring& path, sf::RenderWindow* window, Car* car, sf::View* view);
+    Level(sf::RenderWindow* window, Car* car, sf::View* view);
 
     void render(float alpha, bool isRunning);
     void update();
     void reset();
     void setupCameraPos();
+    void setLevel(int levelNumber);
 };

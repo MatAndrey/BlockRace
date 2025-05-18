@@ -30,9 +30,10 @@ void Level::onMouseMoved(const sf::Event::MouseMoved& event)
     }
 }
 
-void Level::onLevelSet(const SetLevelEvent& event)
+void Level::setLevel(int levelNumber)
 {
-    loadDataFromFile(event.levelFilePath);
+    std::wstring levelFile = L"./assets/maps/level" + std::to_wstring(levelNumber) + L".json";
+    loadDataFromFile(levelFile);
     updateCheckPoint();
     reset();
     setupCameraPos();
@@ -244,13 +245,9 @@ void Level::handleKeyReleased(const sf::Event::KeyReleased& event)
     }
 }
 
-Level::Level(const std::wstring& path, sf::RenderWindow* window, Car* car, sf::View* view) :
+Level::Level(sf::RenderWindow* window, Car* car, sf::View* view) :
 	car(car), window(window), mapTexture(), mapSprite(mapTexture), view(view)
 {
-    loadDataFromFile(path);
-    updateCheckPoint();
-	reset();
-
     for (const auto& border : roadBorders) {
         sf::VertexArray line(sf::PrimitiveType::LineStrip);
         for (const auto& point : border) {
@@ -265,7 +262,6 @@ Level::Level(const std::wstring& path, sf::RenderWindow* window, Car* car, sf::V
     EventBus::get().subscribe<sf::Event::MouseButtonPressed>(this, &Level::onMousePressed);
     EventBus::get().subscribe<sf::Event::MouseButtonReleased>(this, &Level::onMouseReleased);
     EventBus::get().subscribe<sf::Event::MouseMoved>(this, &Level::onMouseMoved);
-    EventBus::get().subscribe<SetLevelEvent>(this, &Level::onLevelSet);
 
     EventBus::get().subscribe<CheatRaceEvent>(this, &Level::handleCheatRace);
     EventBus::get().subscribe<CheatShowBordersEvent>(this, &Level::handleCheatShowBorders);

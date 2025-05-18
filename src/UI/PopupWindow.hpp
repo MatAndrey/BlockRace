@@ -3,6 +3,7 @@
 #include <functional>
 #include "../EventBus.hpp"
 #include "Button.hpp"
+#include <sstream>
 
 class PopupWindow {
 public:
@@ -16,6 +17,8 @@ public:
         const std::vector<std::wstring>& options,
         Callback callback = nullptr
     );
+    void showWinMessage(float raceTimeSecs, bool lastLevel);
+    void showLossMessage();
     void showLevelSelection(const std::vector<std::wstring>& levelNames, Callback callback);
     void showCredits(const std::vector<std::vector<std::wstring>>& credits);
     void hide();
@@ -33,6 +36,11 @@ private:
     sf::Text messageText;
     std::vector<Button*> buttons;
     Callback currentCallback;
+
+    sf::Texture winTexture{ ".\\assets\\images\\win.png" };
+    sf::Texture lossTexture{ ".\\assets\\images\\loss.png" };
+    sf::Sprite winLossImage;
+    bool isImageVisible = false;
 
     std::vector<sf::Text> creditsTexts;
     sf::Clock creditsClock;
