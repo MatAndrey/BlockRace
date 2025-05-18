@@ -16,7 +16,8 @@ Button::Button(sf::Vector2f pos, sf::RenderWindow* window, std::wstring textCont
 	text.setString(textContent);
 	text.setCharacterSize(18);
 	text.setFillColor(sf::Color::White);
-	text.setPosition(pos + sf::Vector2f{ (size.x - text.getLocalBounds().size.x) / 2.0f,  (size.y - text.getLocalBounds().size.y) / 2.0f - 5 });
+	sf::Vector2f p = pos + sf::Vector2f{ (size.x - text.getLocalBounds().size.x) / 2.0f,  (size.y - text.getLocalBounds().size.y) / 2.0f - 5 };
+	text.setPosition(sf::Vector2f{ float((int)p.x), float((int)p.y) });
 }
 
 Button::~Button()
@@ -26,7 +27,6 @@ Button::~Button()
 
 void Button::render()
 {
-	text.setFont(font);
 	window->draw(background);
 	window->draw(text);
 }

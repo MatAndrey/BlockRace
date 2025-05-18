@@ -6,8 +6,6 @@ PopupWindow::PopupWindow(sf::RenderWindow& parentWindow)
     titleText(font), messageText(font),
     winLossImage(winTexture) {
     background.setFillColor(sf::Color(0, 0, 0, 150));
-    windowRect.setFillColor(sf::Color(70, 70, 70));
-    windowRect.setOutlineColor(sf::Color::White);
     windowRect.setOutlineThickness(2);
 
     winLossImage.setScale({ 0.4, 0.4 });
@@ -25,6 +23,10 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
 
     windowRect.setSize({ parentSize.x * 0.3f, parentSize.y * 0.3f });
     windowRect.setPosition({ parentSize.x * 0.35f, parentSize.y * 0.35f });
+    windowRect.setSize({ parentSize.x * 0.4f, parentSize.y * 0.3f });
+    windowRect.setPosition({ parentSize.x * 0.3f, parentSize.y * 0.35f });
+    windowRect.setFillColor(sf::Color(70, 70, 70));
+    windowRect.setOutlineColor(sf::Color::White);
 
     setupText(titleText, title, font, 24, sf::Color::White);
     setupText(messageText, message, font, 18, sf::Color::White);
@@ -93,6 +95,7 @@ void PopupWindow::showLossMessage()
 }
 
 void PopupWindow::showLevelSelection(const std::vector<std::wstring>& levelNames, Callback callback) {
+    hide();
     currentCallback = callback;
 
     sf::Vector2f parentSize = static_cast<sf::Vector2f>(parentWindow.getSize());
@@ -200,6 +203,10 @@ void PopupWindow::showCredits(const std::vector<std::vector<std::wstring>>& cred
 }
 
 void PopupWindow::hide() {
+    setupText(titleText, L"", font, 24, sf::Color::White);
+    setupText(messageText, L"", font, 18, sf::Color::White);
+    windowRect.setFillColor({ 0, 0, 0, 0 });
+    windowRect.setOutlineColor({ 0, 0, 0, 0 });
     visible = false;
     isCreditsMode = false;
     creditsOffset = 0;
