@@ -32,8 +32,9 @@ class Game {
 	sf::Text mouseCoordinates;
 	int currentLevel = 1;
 
-	const unsigned initWidth = 800;
-	const unsigned initHeight = 600;
+	const unsigned initWidth = 1200;
+	const unsigned initHeight = 700;
+	const float minBlocksViewWidth = 350;
 
 	sf::Vector2f targetPos;
 	sf::Vector2f mousePos;

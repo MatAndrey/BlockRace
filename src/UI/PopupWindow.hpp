@@ -27,6 +27,9 @@ public:
 
     bool isVisible() const;
 
+    const float popupWidth = 550;
+    const float popupHeight = 300;
+
 private:
     sf::RenderWindow& parentWindow;
     sf::RectangleShape background;

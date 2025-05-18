@@ -21,10 +21,8 @@ void PopupWindow::show(const std::wstring& title, const std::wstring& message,
     background.setSize(parentSize);
     background.setFillColor(sf::Color(0, 0, 0, 150));
 
-    windowRect.setSize({ parentSize.x * 0.3f, parentSize.y * 0.3f });
-    windowRect.setPosition({ parentSize.x * 0.35f, parentSize.y * 0.35f });
-    windowRect.setSize({ parentSize.x * 0.4f, parentSize.y * 0.3f });
-    windowRect.setPosition({ parentSize.x * 0.3f, parentSize.y * 0.35f });
+    windowRect.setSize({ popupWidth, popupHeight });
+    windowRect.setPosition({ (parentSize.x - popupWidth) / 2, (parentSize.y - popupHeight) / 2 });
     windowRect.setFillColor(sf::Color(70, 70, 70));
     windowRect.setOutlineColor(sf::Color::White);
 
@@ -64,14 +62,13 @@ void PopupWindow::showWinMessage(float raceTimeSecs, bool lastLevel) {
         std::vector<std::wstring>{L"Продолжить"} :
         std::vector<std::wstring>{ L"Продолжить", L"Следующий уровень" },
         [this](int option) {
+            isImageVisible = false;
             if (option == 1) {
                 EventBus::get().publish<NextLevelEvent>({});
             }
         });
     sf::Vector2f parentSize = static_cast<sf::Vector2f>(parentWindow.getSize());
-    winLossImage.setScale({ 0.4, 0.4 });
-    winTexture.setSmooth(true);
-    winLossImage.setPosition({ parentSize.x * 0.5f - winLossImage.getLocalBounds().size.x / 2 * winLossImage.getScale().x, parentSize.y * 0.35f - 90 });
+    winLossImage.setPosition({ parentSize.x / 2 - winLossImage.getLocalBounds().size.x / 2 * winLossImage.getScale().x, (parentSize.y - popupHeight) / 2 - 90 });
 
     messageText.setPosition(windowRect.getPosition() + sf::Vector2f{ 20, 180 });
 
@@ -85,10 +82,12 @@ void PopupWindow::showLossMessage()
         L"",
         L"",
         std::vector<std::wstring>{L"Заново"},
-        nullptr
+        [this](int option) {
+            isImageVisible = false;
+        }
     );
     sf::Vector2f parentSize = static_cast<sf::Vector2f>(parentWindow.getSize());
-    winLossImage.setPosition({ parentSize.x * 0.5f - winLossImage.getLocalBounds().size.x / 2 * winLossImage.getScale().x, parentSize.y * 0.35f - 60 });
+    winLossImage.setPosition({ parentSize.x / 2 - winLossImage.getLocalBounds().size.x / 2 * winLossImage.getScale().x, (parentSize.y - popupHeight) / 2 - 60 });
 
     winLossImage.setTexture(lossTexture);
     isImageVisible = true;

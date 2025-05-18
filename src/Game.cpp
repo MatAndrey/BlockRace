@@ -135,13 +135,15 @@ void Game::onWindowResized(const sf::Event::Resized&) {
 	appView.setSize(windowSize);
 	appView.setCenter(windowSize / 2.0f);
 
-	raceView.setViewport(sf::FloatRect({ 0.25f, menu.height / windowSize.y }, { 0.75f, workAreaHeight / windowSize.y }));
-	raceView.setSize({ 0.75f * windowSize.x, workAreaHeight });
-	raceView.setCenter({ 0.75f * windowSize.x / 2, workAreaHeight / 2 });
+	float blocksViewWidth = std::max(minBlocksViewWidth, windowSize.x * 0.25f);
 
-	blocksView.setViewport(sf::FloatRect({ 0, menu.height / windowSize.y }, { 0.25f, workAreaHeight / windowSize.y }));
-	blocksView.setSize({ 0.25f * windowSize.x, workAreaHeight });
-	blocksView.setCenter({ 0.25f * windowSize.x / 2, workAreaHeight / 2 });
+	raceView.setViewport(sf::FloatRect({ blocksViewWidth / windowSize.x, menu.height / windowSize.y }, { 1 - blocksViewWidth / windowSize.x, workAreaHeight / windowSize.y }));
+	raceView.setSize({ windowSize.x - blocksViewWidth , workAreaHeight });
+	raceView.setCenter({ (windowSize.x - blocksViewWidth) / 2, workAreaHeight / 2 });
+
+	blocksView.setViewport(sf::FloatRect({ 0, menu.height / windowSize.y }, { blocksViewWidth / windowSize.x, workAreaHeight / windowSize.y }));
+	blocksView.setSize({ blocksViewWidth, workAreaHeight });
+	blocksView.setCenter({ blocksViewWidth / 2, workAreaHeight / 2 });
 
 	mouseCoordinates.setPosition({ raceView.getViewport().position.x * windowSize.x,
 		raceView.getViewport().position.y * windowSize.y });
