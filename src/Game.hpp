@@ -31,6 +31,7 @@ class Game {
 	sf::Text raceTimeText;
 	sf::Text mouseCoordinates;
 	int currentLevel = 1;
+	std::map<int, float> timeRecords;
 
 	const unsigned initWidth = 1200;
 	const unsigned initHeight = 700;

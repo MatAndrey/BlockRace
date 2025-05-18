@@ -48,7 +48,7 @@ void Game::loop()
    {  
        handleEvents();
 	   update();
-       render();        
+	   render();
    }  
 }
 
@@ -168,7 +168,12 @@ void Game::onRaceFinish(const RaceFinishedEvent& event)
 {
 	isRaceOn = false;
 	EventBus::get().publish<StopSimulationEvent>(StopSimulationEvent{});
-	popup.showWinMessage(raceTime.asSeconds(), currentLevel == 10);
+	float raceTimeSecs = raceTime.asSeconds();
+	if (timeRecords.find(currentLevel) == timeRecords.end() || raceTimeSecs < timeRecords[currentLevel]) {
+		timeRecords[currentLevel] = raceTimeSecs;
+	}
+	menu.setAvailableLevelsCount(timeRecords.size() + 1);
+	popup.showWinMessage(raceTimeSecs, currentLevel == 10);
 }
 
 void Game::onCarAccident(const CarAccidentEvent& event)
@@ -220,7 +225,7 @@ void Game::onLevelSet(const SetLevelEvent& event)
 void Game::onNextLevel(const NextLevelEvent& event)
 {
 	if (currentLevel < 10) {
-		level.setLevel(++currentLevel);
+		onLevelSet({ ++currentLevel });
 	}
 }
 
@@ -263,6 +268,12 @@ void Game::renderTime()
 {
 	std::wstringstream wss;
 	wss << L"Время: " << std::setprecision(2) << std::fixed << raceTime.asSeconds();
+
+	auto currentLevelTimeRecord = timeRecords.find(currentLevel);
+	if (currentLevelTimeRecord != timeRecords.end()) {
+		float currentRecord = currentLevelTimeRecord->second;
+		wss << L"\nРекорд: " << currentRecord;
+	}
 	raceTimeText.setString(wss.str());
 	raceTimeText.setPosition({ window.getSize().x - 200.0f, menu.height });
 	window.draw(raceTimeText);

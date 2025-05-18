@@ -6,6 +6,7 @@
 class Menu {
 	sf::RenderWindow* window;
 	PopupWindow* popup;
+	int availableLevelsCount = 1;
 
 	Button saveButton;
 	Button saveAsButton;
@@ -22,8 +23,11 @@ class Menu {
 	void onLevelSelect();
 	void onCredits();
 	void onExit();
+
+	void onUnlockLevelsCheat(const CheatUnlockLevelsEvent&);
 public:
 	float height;
 	Menu(sf::RenderWindow* window, float height, PopupWindow* popup);
+	void setAvailableLevelsCount(int count);
 	void render();
 };

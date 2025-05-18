@@ -12,7 +12,16 @@ Menu::Menu(sf::RenderWindow* window, float height, PopupWindow* popup) :
 	height(height),
 	window(window),
 	popup(popup)
-{}
+{
+	EventBus::get().subscribe<CheatUnlockLevelsEvent>(this, &Menu::onUnlockLevelsCheat);
+}
+
+void Menu::setAvailableLevelsCount(int count)
+{
+	if (count > availableLevelsCount && count <= 10) {
+		availableLevelsCount = count;
+	}
+}
 
 void Menu::render()
 {
@@ -58,7 +67,7 @@ void Menu::onLevelSelect() {
 		EventBus::get().publish<SetLevelEvent>(SetLevelEvent{ selectedIndex+1 });
 		};
 
-	popup->showLevelSelection(levels, callback);
+	popup->showLevelSelection(std::vector<std::wstring>(levels.begin(), levels.begin() + availableLevelsCount), callback);
 }
 
 void Menu::onCredits()
@@ -91,4 +100,9 @@ void Menu::onCredits()
 void Menu::onExit()
 {
 	EventBus::get().publish<ExitEvent>(ExitEvent{});
+}
+
+void Menu::onUnlockLevelsCheat(const CheatUnlockLevelsEvent&)
+{
+	setAvailableLevelsCount(10);
 }

@@ -54,3 +54,5 @@ struct CheatRaceEvent {};
 struct CheatShowBordersEvent {};
 
 struct CheatNoBordersEvent {};
+
+struct CheatUnlockLevelsEvent {};

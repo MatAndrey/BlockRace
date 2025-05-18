@@ -101,8 +101,21 @@ void PopupWindow::showLevelSelection(const std::vector<std::wstring>& levelNames
     background.setSize(parentSize);
     background.setFillColor(sf::Color(0, 0, 0, 150));
 
-    float buttonWidth = 120.f, buttonHeight = 50.f, margin = 20.f;
-    size_t columns = 5;
+    const float buttonWidth = 120.f;
+    const float buttonHeight = 50.f;
+    const float margin = 20.f;
+
+    size_t columns;
+    if (levelNames.size() <= 3) {
+        columns = levelNames.size();
+    }
+    else if (levelNames.size() <= 6) {
+        columns = (levelNames.size() + 1) / 2;
+    }
+    else {
+        columns = 5;
+    }
+
     size_t rows = (levelNames.size() + columns - 1) / columns;
 
     float totalWidth = columns * buttonWidth + (columns - 1) * margin;
