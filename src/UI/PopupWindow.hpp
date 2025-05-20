@@ -18,7 +18,7 @@ public:
         Callback callback = nullptr
     );
     void showWinMessage(float raceTimeSecs, bool lastLevel);
-    void showLossMessage();
+    void showLossMessage(std::function<void()>);
     void showLevelSelection(const std::vector<std::wstring>& levelNames, Callback callback);
     void showCredits(const std::vector<std::vector<std::wstring>>& credits);
     void hide();

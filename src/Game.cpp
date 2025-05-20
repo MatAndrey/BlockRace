@@ -9,7 +9,9 @@ Game::Game() :
 	menu(&window, 30, &popup),
 	font(".\\assets\\fonts\\Share-Tech-CYR.otf"),
 	raceTimeText(font),
-	mouseCoordinates(font)
+	mouseCoordinates(font),
+	fireworks(window),
+	blackSmoke(window)
 {
 	window.create(sf::VideoMode({ initWidth, initHeight }), "Block Race");
 	window.setKeyRepeatEnabled(false);
@@ -174,12 +176,17 @@ void Game::onRaceFinish(const RaceFinishedEvent& event)
 	}
 	menu.setAvailableLevelsCount(timeRecords.size() + 1);
 	popup.showWinMessage(raceTimeSecs, currentLevel == 10);
+	sf::Vector2u ws = window.getSize();
+	fireworks.triggerFireworks(10);
 }
 
 void Game::onCarAccident(const CarAccidentEvent& event)
 {
 	EventBus::get().publish<StopSimulationEvent>(StopSimulationEvent{});
-	popup.showLossMessage();
+	blackSmoke.activate();
+	popup.showLossMessage([this]() {
+		blackSmoke.disactivate();
+		});
 }
 
 void Game::onSaveFile(const SaveFileEvent& event)
@@ -259,7 +266,11 @@ void Game::render()
 	mouseCoordinates.setString(wss.str());
 	window.draw(mouseCoordinates);
 
+	if (blackSmoke.isActive) {
+		blackSmoke.draw();
+	}
 	popup.render();
+	fireworks.draw(window);
 
     window.display();
 }
@@ -292,5 +303,9 @@ void Game::update()
 		car.update(deltaTime);
 		level.update();
 		timeAccumulator -= deltaTime;
+	}
+	fireworks.update(dt.asSeconds());
+	if (blackSmoke.isActive) {
+		blackSmoke.update(dt.asSeconds());
 	}	
 }

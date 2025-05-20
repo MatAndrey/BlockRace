@@ -1,6 +1,7 @@
 #pragma once
 #include "Entity.hpp"
 #include <cmath>
+#include "Particles/SmokeSystem.hpp"
 
 class Car : public Entity
 {
@@ -15,6 +16,8 @@ class Car : public Entity
 
 	sf::Texture texture;
 	sf::Sprite sprite;
+
+	SmokeSystem smoke;
 
 public:
 	sf::Angle direction;

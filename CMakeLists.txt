@@ -39,7 +39,13 @@ add_executable(BlockRace
     "src/UI/Menu.cpp" 
     "src/FileDialog.cpp" 
     "src/UI/UIElement.cpp"
-    "src/Cheats.cpp" "src/Blocks/MoveToBlock.cpp" "src/Blocks/ConstSpeedBlock.cpp")
+    "src/Cheats.cpp" 
+    "src/Blocks/MoveToBlock.cpp" 
+    "src/Blocks/ConstSpeedBlock.cpp" 
+    "src/Particles/SmokeParticle.cpp" 
+    "src/Particles/SmokeSystem.cpp" 
+    "src/Particles/FireworkParticle.cpp" 
+    "src/Particles/FireworkSystem.cpp" "src/Particles/BlackSmokeParticle.cpp" "src/Particles/BlackSmokeSystem.cpp")
 
 # Добавление assets в билд
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})

@@ -76,13 +76,14 @@ void PopupWindow::showWinMessage(float raceTimeSecs, bool lastLevel) {
     isImageVisible = true;
 }
 
-void PopupWindow::showLossMessage()
+void PopupWindow::showLossMessage(std::function<void()> callback)
 {
     show(
         L"",
         L"",
         std::vector<std::wstring>{L"Заново"},
-        [this](int option) {
+        [this, callback](int option) {
+            callback();
             isImageVisible = false;
         }
     );

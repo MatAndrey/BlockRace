@@ -6,6 +6,7 @@ void Car::render(sf::Vector2f interpolatedPos)
     sf::Transform transform;
     transform.translate(interpolatedPos);
     transform.rotate(direction);
+    smoke.draw(*window);
     window->draw(sprite, transform);
 }
 
@@ -63,6 +64,9 @@ void Car::update(sf::Time deltaTime) {
 
     pos.x += dx;
     pos.y += dy;
+
+    smoke.setCarParameters(pos, speed);
+    smoke.update(dt / 10);
 }
 
 void Car::accelerate(bool state)

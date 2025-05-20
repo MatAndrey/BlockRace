@@ -8,6 +8,8 @@
 #include "UI/Menu.hpp"
 #include "UI/UIElement.hpp"
 #include "Cheats.hpp"
+#include "./Particles/FireworkSystem.hpp"
+#include "./Particles/BlackSmokeSystem.hpp"
 
 class Game {
 	Car car;
@@ -15,6 +17,8 @@ class Game {
 	PopupWindow popup;
 	BlockManager blockManager;
 	Menu menu;
+	FireworkSystem fireworks;
+	BlackSmokeSystem blackSmoke;
 
 	sf::View appView;
 	sf::View blocksView;
